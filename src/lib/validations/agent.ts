@@ -32,6 +32,29 @@ function parseCommaSeparated(input?: string): string[] | undefined {
   return Array.from(new Set(parts));
 }
 
+function parseBooleanInput(input: unknown): boolean | undefined {
+  if (input === undefined || input === null || input === "") {
+    return undefined;
+  }
+
+  if (typeof input === "boolean") {
+    return input;
+  }
+
+  if (typeof input === "string") {
+    const normalized = input.trim().toLowerCase();
+    if (normalized === "true") {
+      return true;
+    }
+
+    if (normalized === "false") {
+      return false;
+    }
+  }
+
+  return input as never;
+}
+
 export const CreateAgentSchema = z.object({
   name: NameSchema,
   description: DescriptionSchema,
@@ -96,6 +119,46 @@ export const ListAgentsQuerySchema = z.object({
     .transform((value) => parseCommaSeparated(value)),
 });
 
+export const SearchAgentsQuerySchema = z.object({
+  q: z
+    .string()
+    .trim()
+    .max(200)
+    .optional()
+    .transform((value) => {
+      if (!value || value.length === 0) {
+        return undefined;
+      }
+
+      return value;
+    }),
+  skills: z
+    .string()
+    .optional()
+    .transform((value) => parseCommaSeparated(value)),
+  protocols: z
+    .string()
+    .optional()
+    .transform((value) => parseCommaSeparated(value)),
+  category: z
+    .string()
+    .trim()
+    .max(60)
+    .optional()
+    .transform((value) => {
+      if (!value || value.length === 0) {
+        return undefined;
+      }
+
+      return value;
+    }),
+  pricing: z.nativeEnum(PricingModel).optional(),
+  verified: z.preprocess(parseBooleanInput, z.boolean().optional()),
+  sort: z.enum(["relevance", "rating", "newest", "name"]).default("relevance"),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(50).default(12),
+});
+
 export const AgentSlugParamsSchema = z.object({
   slug: z
     .string()
@@ -112,4 +175,5 @@ export const RegisterAgentSchema = CreateAgentSchema.extend({
 export type CreateAgentInput = z.infer<typeof CreateAgentSchema>;
 export type UpdateAgentInput = z.infer<typeof UpdateAgentSchema>;
 export type ListAgentsQueryInput = z.infer<typeof ListAgentsQuerySchema>;
+export type SearchAgentsQueryInput = z.infer<typeof SearchAgentsQuerySchema>;
 export type RegisterAgentInput = z.infer<typeof RegisterAgentSchema>;

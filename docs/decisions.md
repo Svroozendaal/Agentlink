@@ -105,3 +105,26 @@ Slug wordt automatisch gegenereerd uit naam en uniek gemaakt met suffixes.
 ### Consequenties
 - Naamwijzigingen kunnen slugwijziging veroorzaken
 - Slug generatie edge cases moeten getest blijven
+
+## ADR-0006: Discovery search via PostgreSQL full-text search
+
+- Datum: 2026-02-14
+- Status: Accepted
+
+### Context
+Fase 3 vereist machine-readable discovery met zoekterm, filters, sortering en paginatie.
+We willen eerst snel waarde leveren zonder extra infra-complexiteit.
+
+### Keuze
+Discovery draait op PostgreSQL met full-text search (`to_tsvector` + `plainto_tsquery`) en SQL-aggregatie voor rating-sortering.
+Endpoint: `GET /api/v1/agents/search`.
+
+### Reden
+- Past op bestaande Prisma + PostgreSQL stack
+- Geen extra beheer van Elasticsearch/OpenSearch in vroege fase
+- Voldoende voor v1 zoekkwaliteit met filter/sort combinaties
+
+### Consequenties
+- Zoekrelevantie is basic en niet semantisch
+- Voor hogere schaal of advanced ranking kan later dedicated search infra nodig zijn
+- Backlog bevat vervolgstappen voor autocomplete en ranking tuning

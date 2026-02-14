@@ -14,6 +14,8 @@ export interface AgentSummary {
   isPublished: boolean;
   isVerified: boolean;
   logoUrl?: string | null;
+  rating?: number | null;
+  reviewCount?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -27,4 +29,11 @@ export interface AgentDetail extends AgentSummary {
   bannerUrl?: string | null;
   metadata?: Record<string, unknown> | null;
   ownerId: string;
+}
+
+export type AgentSearchSort = "relevance" | "rating" | "newest" | "name";
+
+export interface AgentCategoryCount {
+  category: string;
+  count: number;
 }

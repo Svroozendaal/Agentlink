@@ -118,6 +118,44 @@
 ```
 - Response `400`: invalid query params.
 
+### `GET /api/v1/agents/search`
+- Doel: discovery endpoint met full-text search, filters en sortering.
+- Auth: niet vereist.
+- Query params:
+
+| Param | Type | Verplicht | Beschrijving |
+|------|------|-----------|-------------|
+| `q` | `string` | Nee | Zoekt in naam + beschrijving via full-text search |
+| `skills` | `string` | Nee | Komma-gescheiden skills (`weather,forecast`) |
+| `protocols` | `string` | Nee | Komma-gescheiden protocollen (`a2a,rest,mcp`) |
+| `category` | `string` | Nee | Exacte categorie filter (case-insensitive) |
+| `pricing` | `FREE \| FREEMIUM \| PAID \| ENTERPRISE` | Nee | Prijsmodel filter |
+| `verified` | `boolean` | Nee | Alleen verified (`true`) of unverified (`false`) |
+| `sort` | `relevance \| rating \| newest \| name` | Nee | Sorteervolgorde (default: `relevance`) |
+| `page` | `number` | Nee | Pagina (default 1) |
+| `limit` | `number` | Nee | Items per pagina (1-50, default 12) |
+
+- Response `200`:
+```json
+{
+  "data": [
+    {
+      "slug": "supportpilot",
+      "name": "SupportPilot",
+      "rating": 4.7,
+      "reviewCount": 8
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "limit": 12,
+    "total": 1,
+    "totalPages": 1
+  }
+}
+```
+- Response `400`: invalid query params.
+
 ### `POST /api/v1/agents`
 - Doel: maak nieuw agentprofiel.
 - Auth: vereist (`session` of `Bearer` API key).
