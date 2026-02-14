@@ -3,12 +3,14 @@
 Doel: service-laag met businesslogica voor domeinen zoals agents.
 
 ## Overzicht
-Deze map bevat functies die routes en pagina's gebruiken voor agent CRUD, discovery search en ownership checks.
+Deze map bevat functies die routes en pagina's gebruiken voor agent CRUD, discovery search, reputatie en machine-readable agent cards.
 Route handlers blijven hierdoor dun en focussen op validatie + HTTP responses.
 
 ## Bestanden
 - `agents.ts`: agent businesslogica, slug generatie, ownership checks
 - `search.ts`: discovery search, filters, sortering, featured agents en categorie aggregaties
+- `reviews.ts`: review listing + upsert logica en rating samenvattingen
+- `agent-card.ts`: machine-readable card payload op basis van agentprofiel
 - `info_services.md`: documentatie van deze map
 
 ## Afhankelijkheden
@@ -20,4 +22,4 @@ Route handlers blijven hierdoor dun en focussen op validatie + HTTP responses.
 - Data-access verloopt uitsluitend via `src/lib/db.ts`
 
 ## Laatste wijziging
-- 2026-02-14: search service toegevoegd in fase 3.
+- 2026-02-14: review- en card-services toegevoegd voor productplan alignment.

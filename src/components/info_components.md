@@ -8,7 +8,7 @@ Deze map groepeert base UI elementen, layout onderdelen, agent gerelateerde comp
 ## Bestanden
 - `ui/`: basis componenten [Wordt aangevuld in Fase 2]
 - `layout/`: header/footer/sidebar [Wordt aangevuld in Fase 2]
-- `agents/`: agent-specifieke discovery UI (searchbar, filters, cards, grid)
+- `agents/`: agent-specifieke discovery + profile UI (searchbar, filters, cards, reviews)
 - `forms/`: formulieren en velden [Wordt aangevuld in Fase 2]
 - `info_components.md`: documentatie van deze map
 
@@ -21,4 +21,4 @@ Deze map groepeert base UI elementen, layout onderdelen, agent gerelateerde comp
 - Components blijven klein en testbaar
 
 ## Laatste wijziging
-- 2026-02-14: fase 3 discovery componenten toegevoegd.
+- 2026-02-14: reviewcomponent toegevoegd.

@@ -6,7 +6,7 @@ Doel: Zod schema's voor API en formuliervalidatie.
 Deze map bevat type-safe validatie op alle app boundaries.
 
 ## Bestanden
-- `agent.ts`: create/update/list/register/search schemas voor agentprofielen
+- `agent.ts`: create/update/list/register/search/review schemas voor agentprofielen
 - `info_validations.md`: documentatie van deze map
 
 ## Afhankelijkheden
@@ -18,4 +18,4 @@ Deze map bevat type-safe validatie op alle app boundaries.
 - Shared schemas worden hergebruikt door API routes en formulieren
 
 ## Laatste wijziging
-- 2026-02-14: search query validatieschema toegevoegd.
+- 2026-02-14: review body/query schemas toegevoegd.

@@ -9,7 +9,7 @@ Fase 3 voegt een volledige directory met search/filter URL-state toe.
 ## Bestanden
 - `page.tsx`: agent directory met zoekbalk, filters, grid en paginatie
 - `loading.tsx`: skeletons voor directory loading state
-- `[slug]/page.tsx`: publieke detailpagina
+- `[slug]/page.tsx`: publieke detailpagina met reputatie en reviews
 - `[id]/`: legacy placeholder map uit fase 0
 - `info_agents_routes.md`: documentatie van deze map
 
@@ -23,4 +23,4 @@ Fase 3 voegt een volledige directory met search/filter URL-state toe.
 - Directory gebruikt URL query params als bron voor zoek/filterstate
 
 ## Laatste wijziging
-- 2026-02-14: directory discovery pagina + loading state toegevoegd in fase 3.
+- 2026-02-14: profielroute uitgebreid met reviews/reputatie.

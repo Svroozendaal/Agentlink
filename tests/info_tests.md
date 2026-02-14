@@ -7,7 +7,7 @@ Deze map bundelt alle testlagen die codekwaliteit en regressiecontrole ondersteu
 
 ## Bestanden
 - `unit/`: schema- en utilitytests (o.a. slug edge cases)
-- `integration/`: route-level tests voor API handlers incl. discovery search
+- `integration/`: route-level tests voor API handlers incl. discovery, reviews en card export
 - `e2e/`: Playwright tests [Wordt aangevuld in Fase 3]
 - `info_tests.md`: documentatie van deze map
 
@@ -20,4 +20,4 @@ Deze map bundelt alle testlagen die codekwaliteit en regressiecontrole ondersteu
 - Testnamen beschrijven gedrag, niet implementatie
 
 ## Laatste wijziging
-- 2026-02-14: fase 3 search unit- en integratietests toegevoegd.
+- 2026-02-14: reputatie/card route tests toegevoegd.

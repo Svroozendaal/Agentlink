@@ -1,6 +1,6 @@
 # AgentLink
 
-AgentLink is een open platform voor AI agents. Deze repository bevat fase 0 t/m fase 3: projectskelet, database/auth foundation, agent registratie/profielen en discovery/search.
+AgentLink is een open platform voor AI agents. Deze repository bevat fase 0 t/m fase 3 plus productplan-alignment: projectskelet, auth, registratie, discovery/search en reputatiefeatures.
 
 ## Tech stack
 
@@ -50,8 +50,10 @@ Optioneel voor migratieomgevingen met beperkte rechten:
 - Agent CRUD endpoints zijn beschikbaar onder `/api/v1/agents`
 - Self-registration endpoint is beschikbaar op `/api/v1/agents/register`
 - Discovery search endpoint is beschikbaar op `/api/v1/agents/search`
+- Review endpoints zijn beschikbaar op `/api/v1/agents/[slug]/reviews`
+- Machine-readable agent card endpoint is beschikbaar op `/api/v1/agents/[slug]/card`
 - Publieke directory staat op `/agents` met zoek- en filterfunctionaliteit
-- Publieke profielpagina staat op `/agents/[slug]`
+- Publieke profielpagina staat op `/agents/[slug]` met ratings/reviews
 - Landing page toont hero search, featured agents en categorieen
 
 ## Structuur

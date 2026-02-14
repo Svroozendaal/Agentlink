@@ -3,8 +3,11 @@ import { describe, expect, it } from "vitest";
 
 import {
   CreateAgentSchema,
+  CreateReviewSchema,
   ListAgentsQuerySchema,
+  ListReviewsQuerySchema,
   RegisterAgentSchema,
+  SearchAgentsQuerySchema,
   UpdateAgentSchema,
 } from "@/lib/validations/agent";
 
@@ -80,5 +83,50 @@ describe("RegisterAgentSchema", () => {
     });
 
     expect(result.success).toBe(true);
+  });
+});
+
+describe("SearchAgentsQuerySchema", () => {
+  it("should parse boolean and comma-separated filters", () => {
+    const result = SearchAgentsQuerySchema.parse({
+      q: "support",
+      skills: "support,triage",
+      protocols: "rest,a2a",
+      verified: "true",
+      sort: "rating",
+    });
+
+    expect(result.skills).toEqual(["support", "triage"]);
+    expect(result.protocols).toEqual(["rest", "a2a"]);
+    expect(result.verified).toBe(true);
+    expect(result.sort).toBe("rating");
+  });
+});
+
+describe("CreateReviewSchema", () => {
+  it("should accept valid review payload", () => {
+    const result = CreateReviewSchema.safeParse({
+      rating: 5,
+      comment: "Excellent reliability and clear API docs.",
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  it("should reject invalid rating", () => {
+    const result = CreateReviewSchema.safeParse({
+      rating: 7,
+    });
+
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("ListReviewsQuerySchema", () => {
+  it("should apply defaults", () => {
+    const result = ListReviewsQuerySchema.parse({});
+
+    expect(result.page).toBe(1);
+    expect(result.limit).toBe(10);
   });
 });

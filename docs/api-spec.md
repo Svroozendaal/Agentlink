@@ -183,6 +183,57 @@
 - Response `200`: `{ "data": { ...agentDetail } }`
 - Response `404`: agent niet gevonden.
 
+### `GET /api/v1/agents/[slug]/reviews`
+- Doel: haal reviews en ratingsamenvatting op voor een agent.
+- Auth: niet vereist (ongepubliceerde agentreviews alleen zichtbaar voor eigenaar).
+- Query params:
+
+| Param | Type | Verplicht | Beschrijving |
+|------|------|-----------|-------------|
+| `page` | `number` | Nee | Pagina (default 1) |
+| `limit` | `number` | Nee | Items per pagina (1-50, default 10) |
+
+- Response `200`:
+```json
+{
+  "data": [
+    {
+      "id": "review_1",
+      "rating": 5,
+      "comment": "Great reliability"
+    }
+  ],
+  "meta": { "page": 1, "limit": 10, "total": 1, "totalPages": 1 },
+  "summary": { "averageRating": 5, "reviewCount": 1 }
+}
+```
+- Response `400`: invalid query of slug.
+- Response `404`: agent niet gevonden of niet zichtbaar.
+
+### `POST /api/v1/agents/[slug]/reviews`
+- Doel: maak of update jouw review op een agent.
+- Auth: vereist (`session` of `Bearer` API key).
+- Request body:
+
+| Veld | Type | Verplicht | Beschrijving |
+|------|------|-----------|-------------|
+| `rating` | `number` | Ja | Rating van 1 t/m 5 |
+| `comment` | `string` | Nee | Korte toelichting (3-1200 chars) |
+
+- Response `201`: review aangemaakt.
+- Response `200`: bestaande review bijgewerkt.
+- Response `400`: validatiefout body.
+- Response `401`: niet geauthenticeerd.
+- Response `403`: self-review of ongepubliceerde agent.
+- Response `404`: agent niet gevonden.
+
+### `GET /api/v1/agents/[slug]/card`
+- Doel: machine-readable agent card voor protocolintegraties.
+- Auth: niet vereist voor gepubliceerde agents.
+- Response `200`: `{ "data": { "agent_id": "agentlink:..." ... } }`
+- Response `400`: invalid slug.
+- Response `404`: agent niet gevonden of niet zichtbaar.
+
 ### `PATCH /api/v1/agents/[slug]`
 - Doel: werk agent deels bij.
 - Auth: vereist, alleen eigenaar.

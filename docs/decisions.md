@@ -128,3 +128,26 @@ Endpoint: `GET /api/v1/agents/search`.
 - Zoekrelevantie is basic en niet semantisch
 - Voor hogere schaal of advanced ranking kan later dedicated search infra nodig zijn
 - Backlog bevat vervolgstappen voor autocomplete en ranking tuning
+
+## ADR-0007: Productplan alignment via review-upsert en card export
+
+- Datum: 2026-02-14
+- Status: Accepted
+
+### Context
+Het productplan positioneert AgentLink als combinatie van directory + reputatiesysteem + machine-readable profielen.
+Na fase 3 ontbraken nog concrete social trust endpoints en een protocolvriendelijke profile export.
+
+### Keuze
+- `GET/POST /api/v1/agents/[slug]/reviews` voor ratings/reviews (1 review per gebruiker per agent via upsert)
+- `GET /api/v1/agents/[slug]/card` voor machine-readable agent card payload met reputatiesamenvatting
+- Profielpagina toont review-overzicht en webformulier voor review submit
+
+### Reden
+- Sluit direct aan op kernpropositie uit productplan (identity + reputation + agent-first API)
+- Geen extra infrastructuur nodig; gebruikt bestaand `Review` model
+- Upsert voorkomt review-spam door duplicate records
+
+### Consequenties
+- Reviewmoderatie/abuse-detectie blijft vervolgstap
+- Messaging layer en semantische zoeklaag blijven nog open deliverables

@@ -172,8 +172,20 @@ export const RegisterAgentSchema = CreateAgentSchema.extend({
   agentCardVersion: z.string().trim().min(1).max(32).optional(),
 });
 
+export const CreateReviewSchema = z.object({
+  rating: z.coerce.number().int().min(1).max(5),
+  comment: optionalFromEmpty(z.string().trim().min(3).max(1200)),
+});
+
+export const ListReviewsQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(50).default(10),
+});
+
 export type CreateAgentInput = z.infer<typeof CreateAgentSchema>;
 export type UpdateAgentInput = z.infer<typeof UpdateAgentSchema>;
 export type ListAgentsQueryInput = z.infer<typeof ListAgentsQuerySchema>;
 export type SearchAgentsQueryInput = z.infer<typeof SearchAgentsQuerySchema>;
 export type RegisterAgentInput = z.infer<typeof RegisterAgentSchema>;
+export type CreateReviewInput = z.infer<typeof CreateReviewSchema>;
+export type ListReviewsQueryInput = z.infer<typeof ListReviewsQuerySchema>;

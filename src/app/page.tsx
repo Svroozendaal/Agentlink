@@ -22,12 +22,33 @@ export default async function HomePage() {
           Ontdek de perfecte AI agent
         </h1>
         <p className="mt-4 max-w-2xl text-base text-zinc-700 sm:text-lg">
-          Zoek op skills, protocollen en categorieen. Vergelijk snel welke agent past bij jouw team
-          en workflow.
+          Zoek op skills, protocollen en categorieen. Vergelijk agents op reputatie en deel
+          machine-readable profielen met andere agents en tools.
         </p>
         <div className="mt-7 max-w-3xl">
           <AgentSearchBar actionPath="/agents" buttonLabel="Start ontdekking" />
         </div>
+      </section>
+
+      <section className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+        <article className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+          <h2 className="text-base font-semibold text-zinc-900">Identity</h2>
+          <p className="mt-2 text-sm text-zinc-600">
+            Elk agentprofiel heeft een stabiele slug, duidelijke capabilities en protocolinformatie.
+          </p>
+        </article>
+        <article className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+          <h2 className="text-base font-semibold text-zinc-900">Discovery</h2>
+          <p className="mt-2 text-sm text-zinc-600">
+            Vind agents via web of API met full-text search, filters en sortering op relevantie.
+          </p>
+        </article>
+        <article className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+          <h2 className="text-base font-semibold text-zinc-900">Reputation</h2>
+          <p className="mt-2 text-sm text-zinc-600">
+            Reviews en ratings maken kwaliteit zichtbaar voor bedrijven, developers en agents.
+          </p>
+        </article>
       </section>
 
       <section className="mt-12">

@@ -4,8 +4,10 @@ import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { notFound } from "next/navigation";
 
+import { AgentReviewForm } from "@/components/agents/AgentReviewForm";
 import { authOptions } from "@/lib/auth";
 import { getAgentBySlug } from "@/lib/services/agents";
+import { listAgentReviewsBySlug } from "@/lib/services/reviews";
 
 interface AgentProfilePageProps {
   params: Promise<{ slug: string }>;
@@ -22,6 +24,16 @@ async function AgentProfileContent({ slug, viewerUserId }: AgentProfileContentPr
   if (!agent) {
     notFound();
   }
+
+  const reviewResult = await listAgentReviewsBySlug(slug, viewerUserId, {
+    page: 1,
+    limit: 5,
+  });
+  const averageRatingLabel =
+    reviewResult.summary.averageRating === null
+      ? "Nog geen rating"
+      : `${reviewResult.summary.averageRating.toFixed(1)} / 5`;
+  const canReview = Boolean(viewerUserId && viewerUserId !== agent.ownerId && agent.isPublished);
 
   return (
     <div className="grid gap-8 lg:grid-cols-[2fr,1fr]">
@@ -57,6 +69,41 @@ async function AgentProfileContent({ slug, viewerUserId }: AgentProfileContentPr
               ))}
             </div>
           </div>
+
+          <div>
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">Reputatie</h2>
+            <p className="mt-2 text-sm text-zinc-700">
+              <strong>{averageRatingLabel}</strong> ({reviewResult.summary.reviewCount} reviews)
+            </p>
+          </div>
+
+          <div>
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">Recente reviews</h2>
+            <div className="mt-3 space-y-3">
+              {reviewResult.reviews.length > 0 ? (
+                reviewResult.reviews.map((review) => (
+                  <article
+                    key={review.id}
+                    className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="font-semibold text-zinc-800">
+                        {review.reviewer.name ?? "Anonieme reviewer"}
+                      </p>
+                      <p className="text-zinc-600">{review.rating}/5</p>
+                    </div>
+                    <p className="mt-2 text-zinc-700">
+                      {review.comment ?? "Geen commentaar toegevoegd."}
+                    </p>
+                  </article>
+                ))
+              ) : (
+                <p className="text-sm text-zinc-600">Nog geen reviews beschikbaar.</p>
+              )}
+            </div>
+          </div>
+
+          <AgentReviewForm slug={slug} canReview={canReview} />
         </div>
       </section>
 
@@ -76,6 +123,16 @@ async function AgentProfileContent({ slug, viewerUserId }: AgentProfileContentPr
               <dt className="text-zinc-500">Status</dt>
               <dd className="text-right font-medium text-zinc-800">
                 {agent.isPublished ? "Published" : "Draft"}
+              </dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt className="text-zinc-500">Rating</dt>
+              <dd className="text-right font-medium text-zinc-800">{averageRatingLabel}</dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt className="text-zinc-500">Reviews</dt>
+              <dd className="text-right font-medium text-zinc-800">
+                {reviewResult.summary.reviewCount}
               </dd>
             </div>
           </dl>
@@ -134,9 +191,16 @@ async function AgentProfileContent({ slug, viewerUserId }: AgentProfileContentPr
                 </a>
               </li>
             ) : null}
-            {!agent.endpointUrl && !agent.documentationUrl && !agent.websiteUrl ? (
-              <li className="text-zinc-500">Geen links beschikbaar.</li>
-            ) : null}
+            <li>
+              <a
+                href={`/api/v1/agents/${agent.slug}/card`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-sky-700 hover:underline"
+              >
+                Machine-readable Agent Card
+              </a>
+            </li>
           </ul>
         </section>
       </aside>
