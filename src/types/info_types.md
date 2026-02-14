@@ -6,8 +6,8 @@ Doel: centrale type definities voor domeinmodellen en API contracten.
 Deze map bevat gedeelde TypeScript interfaces voor consistency tussen frontend en backend.
 
 ## Bestanden
-- `agent.ts`: basis Agent types
-- `api.ts`: standaard API response types
+- `agent.ts`: gedeelde AgentSummary/AgentDetail typevormen
+- `api.ts`: gestandaardiseerde API success/error payloadtypes
 - `next-auth.d.ts`: NextAuth session/user type augmentatie
 - `info_types.md`: documentatie van deze map
 
@@ -20,4 +20,4 @@ Deze map bevat gedeelde TypeScript interfaces voor consistency tussen frontend e
 - Vermijd `any`; gebruik concrete interfaces
 
 ## Laatste wijziging
-- 2026-02-14: NextAuth type-augmentatie toegevoegd.
+- 2026-02-14: agent en api types uitgebreid voor fase 2 endpoints.

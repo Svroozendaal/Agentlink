@@ -1,6 +1,6 @@
 # AgentLink
 
-AgentLink is een open platform voor AI agents. Deze repository bevat fase 0 en fase 1 van de codebase: projectskelet, database/auth foundation en API key management.
+AgentLink is een open platform voor AI agents. Deze repository bevat fase 0, fase 1 en fase 2: projectskelet, database/auth foundation, API key management en agent registratie/profielen.
 
 ## Tech stack
 
@@ -17,6 +17,14 @@ AgentLink is een open platform voor AI agents. Deze repository bevat fase 0 en f
 pnpm install
 pnpm prisma generate
 pnpm dev
+```
+
+## Testen
+
+```bash
+pnpm test
+pnpm test:unit
+pnpm test:integration
 ```
 
 ## Environment variabelen
@@ -39,6 +47,9 @@ Optioneel voor migratieomgevingen met beperkte rechten:
 - Fase 1 database schema staat klaar
 - GitHub OAuth via NextAuth is geconfigureerd
 - API key endpoints zijn beschikbaar onder `/api/v1/auth/keys`
+- Agent CRUD endpoints zijn beschikbaar onder `/api/v1/agents`
+- Self-registration endpoint is beschikbaar op `/api/v1/agents/register`
+- Publieke profielpagina op `/agents/[slug]` en dashboard create-flow op `/dashboard/agents/new`
 
 ## Structuur
 

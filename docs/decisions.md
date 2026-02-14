@@ -64,3 +64,44 @@ Fase 1 vraagt om een veilige maar compacte authbasis voor webgebruikers en API-c
 ### Consequenties
 - Voor lokale migratie kan extra env var nodig zijn
 - Productie-runtime gebruikt nog steeds primair `DATABASE_URL`
+
+## ADR-0004: Agent businesslogica via service-laag
+
+- Datum: 2026-02-14
+- Status: Accepted
+
+### Context
+Fase 2 introduceert meerdere agent endpoints met gedeelde regels (slug uniciteit, ownership checks, publicatiegedrag).
+
+### Keuze
+Agentlogica staat in `src/lib/services/agents.ts`, terwijl route handlers enkel validatie/auth/HTTP-responses afhandelen.
+
+### Reden
+- Minder duplicatie tussen routes en serverpagina's
+- Eenduidige foutafhandeling via `AgentServiceError`
+- Beter testbaar domeingedrag
+
+### Consequenties
+- Services moeten expliciet gedocumenteerd en getest blijven
+- Route handlers blijven dun en voorspelbaar
+
+## ADR-0005: Slug als primaire publieke identifier
+
+- Datum: 2026-02-14
+- Status: Accepted
+
+### Context
+Publieke agentprofielen moeten stabiele, leesbare URLs hebben.
+
+### Keuze
+Agent detailroutes en CRUD mutaties gebruiken `slug` i.p.v. interne id.
+Slug wordt automatisch gegenereerd uit naam en uniek gemaakt met suffixes.
+
+### Reden
+- SEO-vriendelijkere URLs
+- Betere UX in publieke links
+- Geen directe blootstelling van interne IDs
+
+### Consequenties
+- Naamwijzigingen kunnen slugwijziging veroorzaken
+- Slug generatie edge cases moeten getest blijven

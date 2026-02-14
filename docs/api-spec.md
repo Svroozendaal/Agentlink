@@ -91,3 +91,82 @@
 - Response `400`: ongeldige route parameter.
 - Response `401`: niet geauthenticeerd.
 - Response `404`: key niet gevonden of niet van gebruiker.
+
+## Agent Endpoints
+
+### `GET /api/v1/agents`
+- Doel: publieke agentlijst met paginatie.
+- Auth: niet vereist.
+- Query params:
+
+| Param | Type | Verplicht | Beschrijving |
+|------|------|-----------|-------------|
+| `page` | `number` | Nee | Pagina (default 1) |
+| `limit` | `number` | Nee | Items per pagina (1-50, default 12) |
+| `search` | `string` | Nee | Zoekt in naam/beschrijving |
+| `category` | `string` | Nee | Categorie filter |
+| `skills` | `string` | Nee | Komma-gescheiden skills filter |
+| `tags` | `string` | Nee | Komma-gescheiden tags filter |
+| `protocols` | `string` | Nee | Komma-gescheiden protocolfilter |
+
+- Response `200`:
+```json
+{
+  "data": [{ "slug": "insightbot", "name": "InsightBot" }],
+  "meta": { "page": 1, "limit": 12, "total": 1, "totalPages": 1 }
+}
+```
+- Response `400`: invalid query params.
+
+### `POST /api/v1/agents`
+- Doel: maak nieuw agentprofiel.
+- Auth: vereist (`session` of `Bearer` API key).
+- Request body (belangrijkste velden):
+
+| Veld | Type | Verplicht | Beschrijving |
+|------|------|-----------|-------------|
+| `name` | `string` | Ja | Agent naam |
+| `description` | `string` | Ja | Korte beschrijving |
+| `skills` | `string[]` | Ja | Skill tags |
+| `protocols` | `("a2a" \| "rest" \| "mcp")[]` | Ja | Ondersteunde protocollen |
+| `longDescription` | `string` | Nee | Uitgebreide beschrijving |
+| `endpointUrl` | `string (url)` | Nee | API endpoint |
+| `pricingModel` | `FREE \| FREEMIUM \| PAID \| ENTERPRISE` | Nee | Prijsmodel |
+| `websiteUrl` | `string (url)` | Nee | Publieke website |
+| `isPublished` | `boolean` | Nee | Publicatiestatus |
+
+- Response `201`: `{ "data": { ...agentDetail } }`
+- Response `400`: validatiefout body.
+- Response `401`: niet geauthenticeerd.
+
+### `GET /api/v1/agents/[slug]`
+- Doel: haal agent detail op.
+- Auth: niet vereist (ongepubliceerde agents alleen zichtbaar voor eigenaar).
+- Response `200`: `{ "data": { ...agentDetail } }`
+- Response `404`: agent niet gevonden.
+
+### `PATCH /api/v1/agents/[slug]`
+- Doel: werk agent deels bij.
+- Auth: vereist, alleen eigenaar.
+- Request body: partial van create schema (minimaal 1 veld verplicht).
+- Response `200`: `{ "data": { ...agentDetail } }`
+- Response `400`: validatiefout.
+- Response `401`: niet geauthenticeerd.
+- Response `403`: geen eigenaar.
+- Response `404`: agent niet gevonden.
+
+### `DELETE /api/v1/agents/[slug]`
+- Doel: unpublish agent (soft delete gedrag).
+- Auth: vereist, alleen eigenaar.
+- Response `200`: `{ "data": { ...agentDetail, "isPublished": false } }`
+- Response `401`: niet geauthenticeerd.
+- Response `403`: geen eigenaar.
+- Response `404`: agent niet gevonden.
+
+### `POST /api/v1/agents/register`
+- Doel: self-registration endpoint voor externe agents.
+- Auth: vereist, **alleen** `Bearer` API key.
+- Request body: AgentLink profiel payload (zelfde kernvelden als create endpoint).
+- Response `201`: `{ "data": { ...agentDetail } }`
+- Response `400`: invalid agent card format.
+- Response `401`: API key auth vereist.

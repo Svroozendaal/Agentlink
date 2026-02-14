@@ -1,12 +1,12 @@
 # src/app/agents/[id]
 
-Doel: dynamische detailroute voor een agentprofiel.
+Doel: legacy placeholder map uit fase 0.
 
 ## Overzicht
-Deze map bevat de detailpagina voor een individuele agent op basis van id.
+Deze map bevat alleen historische documentatie.
+Actieve detailrouting gebeurt in `src/app/agents/[slug]/`.
 
 ## Bestanden
-- `page.tsx`: detailpage placeholder
 - `info_agent_id.md`: documentatie van deze map
 
 ## Afhankelijkheden
@@ -14,7 +14,7 @@ Deze map bevat de detailpagina voor een individuele agent op basis van id.
 - Hangt af van: data uit API en types
 
 ## Patronen
-- Gebruik routeparam `id` als enige bron voor detailopvraag
+- Geen actieve route in deze map
 
 ## Laatste wijziging
-- 2026-02-14: dynamische route placeholder gedocumenteerd.
+- 2026-02-14: gemarkeerd als legacy na overgang naar slug-routing.

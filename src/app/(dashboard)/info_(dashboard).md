@@ -3,9 +3,11 @@
 Doel: routegroep voor gebruikersdashboard.
 
 ## Overzicht
-Deze map reserveert dashboard routes voor beheer van profiel, agents en berichten.
+Deze map bevat dashboardroutes voor ingelogde gebruikers.
+In fase 2 zijn agentbeheer-routes toegevoegd.
 
 ## Bestanden
+- `dashboard/`: agentoverzicht, create-flow en edit-placeholder
 - `info_(dashboard).md`: documentatie van deze routegroep
 
 ## Afhankelijkheden
@@ -13,7 +15,7 @@ Deze map reserveert dashboard routes voor beheer van profiel, agents en berichte
 - Hangt af van: auth sessies en app data
 
 ## Patronen
-- Dashboardpagina's vereisen auth checks in latere fases
+- Dashboardpagina's vereisen auth checks (redirect naar `/login` bij afwezigheid)
 
 ## Laatste wijziging
-- 2026-02-14: routegroep placeholder aangemaakt.
+- 2026-02-14: dashboard agentbeheer routes toegevoegd.

@@ -9,8 +9,9 @@ Deze map bevat gedeelde code die door routes en componenten wordt gebruikt.
 - `db.ts`: Prisma singleton client
 - `auth.ts`: NextAuth configuratie (Prisma adapter + GitHub provider)
 - `auth/`: API key functies en auth-context helper
-- `validations/`: Zod schemas [Wordt aangevuld in Fase 2]
-- `utils/`: helper functies [Wordt aangevuld in Fase 2]
+- `services/`: businesslogica voor domeinen (agents)
+- `validations/`: Zod schemas voor API en forms
+- `utils/`: helper functies (o.a. slugify)
 - `info_lib.md`: documentatie van deze map
 
 ## Afhankelijkheden
@@ -23,4 +24,4 @@ Deze map bevat gedeelde code die door routes en componenten wordt gebruikt.
 - Auth-checks centraliseren in `auth/get-auth-context.ts`
 
 ## Laatste wijziging
-- 2026-02-14: auth foundation en API key helpers toegevoegd.
+- 2026-02-14: service-laag en agentvalidaties toegevoegd.

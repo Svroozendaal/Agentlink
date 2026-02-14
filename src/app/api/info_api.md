@@ -7,7 +7,7 @@ Deze map groepeert API routes onder auth en v1.
 
 ## Bestanden
 - `auth/`: NextAuth sessie/OAuth routes
-- `v1/`: publieke API routes (inclusief API key beheer)
+- `v1/`: publieke API routes (API keys + agent CRUD + register)
 - `info_api.md`: documentatie van deze map
 
 ## Afhankelijkheden
@@ -19,4 +19,4 @@ Deze map groepeert API routes onder auth en v1.
 - Gebruik gedeelde auth-helper voor beveiligde v1 endpoints
 
 ## Laatste wijziging
-- 2026-02-14: auth en v1 key-management routes toegevoegd.
+- 2026-02-14: v1 agent CRUD routes toegevoegd.

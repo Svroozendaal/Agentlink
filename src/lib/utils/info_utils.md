@@ -6,6 +6,7 @@ Doel: gedeelde helperfuncties.
 Deze map bevat framework-neutrale helpers voor dataformattering en kleine utility logica.
 
 ## Bestanden
+- `slugify.ts`: slug normalisatie + uniciteitshelper
 - `info_utils.md`: documentatie van deze map
 
 ## Afhankelijkheden
@@ -14,6 +15,7 @@ Deze map bevat framework-neutrale helpers voor dataformattering en kleine utilit
 
 ## Patronen
 - Utilities blijven side-effect vrij waar mogelijk
+- Deterministische output voor voorspelbare tests
 
 ## Laatste wijziging
-- 2026-02-14: map placeholder toegevoegd.
+- 2026-02-14: slug helper toegevoegd voor agentroutes.

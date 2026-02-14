@@ -6,9 +6,9 @@ Doel: unit, integration en end-to-end tests.
 Deze map bundelt alle testlagen die codekwaliteit en regressiecontrole ondersteunen.
 
 ## Bestanden
-- `unit/`: unit tests [Wordt aangevuld in Fase 1]
-- `integration/`: integratietests [Wordt aangevuld in Fase 1]
-- `e2e/`: Playwright tests [Wordt aangevuld in Fase 2]
+- `unit/`: schema- en utilitytests (o.a. slug edge cases)
+- `integration/`: route-level tests voor API handlers
+- `e2e/`: Playwright tests [Wordt aangevuld in Fase 3]
 - `info_tests.md`: documentatie van deze map
 
 ## Afhankelijkheden
@@ -20,4 +20,4 @@ Deze map bundelt alle testlagen die codekwaliteit en regressiecontrole ondersteu
 - Testnamen beschrijven gedrag, niet implementatie
 
 ## Laatste wijziging
-- 2026-02-14: teststructuur aangemaakt.
+- 2026-02-14: fase 2 unit- en integratietests toegevoegd.

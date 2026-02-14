@@ -8,7 +8,7 @@ Deze map bevat de documentatiebron voor architectuurbesluiten en planning.
 ## Bestanden
 - `decisions.md`: ADRs en technische keuzes
 - `backlog.md`: TODOs en verbeteringen
-- `api-spec.md`: documentatie van auth en API-key endpoints
+- `api-spec.md`: documentatie van auth, API keys en agent CRUD endpoints
 - `info_docs.md`: uitleg van deze map
 
 ## Afhankelijkheden
@@ -20,4 +20,4 @@ Deze map bevat de documentatiebron voor architectuurbesluiten en planning.
 - Houd backlog opgesplitst op prioriteit
 
 ## Laatste wijziging
-- 2026-02-14: fase 1 documentatie en API spec bijgewerkt.
+- 2026-02-14: fase 2 endpoints en beslissingen toegevoegd.
