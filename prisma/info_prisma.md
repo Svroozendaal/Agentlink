@@ -6,7 +6,8 @@ Doel: database schema, migraties en Prisma configuratie.
 Deze map bevat de Prisma setup voor PostgreSQL en de migratieflow.
 
 ## Bestanden
-- `schema.prisma`: datasource en generator
+- `schema.prisma`: kernschema met User/Auth/API key/AgentProfile modellen
+- `seed.ts`: deterministische seed met 5 voorbeeldagents
 - `migrations/`: Prisma migraties
 - `info_prisma.md`: mapdocumentatie
 
@@ -17,6 +18,7 @@ Deze map bevat de Prisma setup voor PostgreSQL en de migratieflow.
 ## Patronen
 - Schemawijzigingen gaan via migraties
 - Geen directe SQL in app-laag zonder motivatie
+- Seed data gebruikt `upsert` zodat herhaald uitvoeren veilig blijft
 
 ## Laatste wijziging
-- 2026-02-14: fase 0 Prisma basis opgezet.
+- 2026-02-14: fase 1 schema, migratie en seed toegevoegd.

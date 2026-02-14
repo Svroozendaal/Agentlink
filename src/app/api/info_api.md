@@ -6,8 +6,8 @@ Doel: API routes voor auth en publieke versiebeheerde endpoints.
 Deze map groepeert API routes onder auth en v1.
 
 ## Bestanden
-- `auth/`: auth route placeholders
-- `v1/`: publieke API placeholders
+- `auth/`: NextAuth sessie/OAuth routes
+- `v1/`: publieke API routes (inclusief API key beheer)
 - `info_api.md`: documentatie van deze map
 
 ## Afhankelijkheden
@@ -16,6 +16,7 @@ Deze map groepeert API routes onder auth en v1.
 
 ## Patronen
 - Versioneer publieke API onder `v1/`
+- Gebruik gedeelde auth-helper voor beveiligde v1 endpoints
 
 ## Laatste wijziging
-- 2026-02-14: API rootstructuur toegevoegd.
+- 2026-02-14: auth en v1 key-management routes toegevoegd.

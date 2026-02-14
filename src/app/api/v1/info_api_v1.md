@@ -3,9 +3,11 @@
 Doel: publieke versioned API endpoints voor AgentLink.
 
 ## Overzicht
-Hier komen de API route handlers voor agent data, search en messaging.
+Hier staan de publieke versioned API route handlers.
+Fase 1 bevat auth key-management, latere fases voegen agents/search/messaging toe.
 
 ## Bestanden
+- `auth/`: API key management endpoints
 - `agents/`: agent CRUD endpoints [Wordt aangevuld in Fase 2]
 - `search/`: discovery/search endpoints [Wordt aangevuld in Fase 3]
 - `messages/`: messaging endpoints [Wordt aangevuld in Fase 5]
@@ -18,6 +20,7 @@ Hier komen de API route handlers voor agent data, search en messaging.
 ## Patronen
 - JSON responses met consistente error structuur
 - Zod validatie op request boundaries
+- Sessiegebaseerde key-management routes onder `/api/v1/auth/*`
 
 ## Laatste wijziging
-- 2026-02-14: v1 API mappenstructuur aangemaakt.
+- 2026-02-14: auth/keys endpoints toegevoegd aan v1.

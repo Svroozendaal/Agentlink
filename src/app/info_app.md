@@ -4,14 +4,15 @@ Doel: Next.js app routes, layouts en API route handlers.
 
 ## Overzicht
 Deze map bevat pagina's, layout en versioned API-structuur voor AgentLink.
+Fase 1 voegde login en auth key-management routes toe.
 
 ## Bestanden
 - `layout.tsx`: root layout
 - `page.tsx`: placeholder landing page
-- `(auth)/`: auth routegroep
+- `(auth)/`: auth routegroep met login pagina
 - `(dashboard)/`: dashboard routegroep
 - `agents/`: agent directory en detail routes
-- `api/`: API routes
+- `api/`: NextAuth en v1 auth key-management routes
 - `info_app.md`: documentatie voor deze map
 
 ## Afhankelijkheden
@@ -23,4 +24,4 @@ Deze map bevat pagina's, layout en versioned API-structuur voor AgentLink.
 - Pagina's blijven dun; business logic in `src/lib`
 
 ## Laatste wijziging
-- 2026-02-14: fase 0 app skelet toegevoegd.
+- 2026-02-14: fase 1 auth routes toegevoegd.

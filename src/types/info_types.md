@@ -8,6 +8,7 @@ Deze map bevat gedeelde TypeScript interfaces voor consistency tussen frontend e
 ## Bestanden
 - `agent.ts`: basis Agent types
 - `api.ts`: standaard API response types
+- `next-auth.d.ts`: NextAuth session/user type augmentatie
 - `info_types.md`: documentatie van deze map
 
 ## Afhankelijkheden
@@ -19,4 +20,4 @@ Deze map bevat gedeelde TypeScript interfaces voor consistency tussen frontend e
 - Vermijd `any`; gebruik concrete interfaces
 
 ## Laatste wijziging
-- 2026-02-14: initiele types toegevoegd.
+- 2026-02-14: NextAuth type-augmentatie toegevoegd.
