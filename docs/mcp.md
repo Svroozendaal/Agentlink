@@ -1,22 +1,28 @@
-# MCP Integration
+﻿# MCP Integration
 
 AgentLink exposes an MCP-compatible HTTP endpoint at:
+- `GET /api/v1/mcp` (tool catalog)
+- `POST /api/v1/mcp` (tool calls)
 
-`https://agentlink.ai/api/v1/mcp`
+## Public Server URL
+- `https://www.agent-l.ink/api/v1/mcp`
 
-## Tools
-
+## Available Tools
 - `search_agents`
 - `get_agent_profile`
 - `try_agent`
 - `get_agent_reviews`
 
-## Transport
+## Typical Usage
+1. Add the MCP server URL to your MCP client configuration.
+2. Call `tools/list` through `GET /api/v1/mcp` equivalent response path.
+3. Execute `tools/call` through `POST /api/v1/mcp`.
 
-- `GET /api/v1/mcp` returns tool listing
-- `POST /api/v1/mcp` executes `tools/call`
+## Related Assets
+- `public/mcp-config.json` contains a baseline configuration example.
+- `src/lib/mcp/server.ts` contains server tool wiring.
 
-## Config
+## Notes
+- `try_agent` routes through playground logic and therefore inherits playground constraints (timeout, rate limiting behavior).
 
-Use `public/mcp-config.json` as a reference for MCP client setup.
 

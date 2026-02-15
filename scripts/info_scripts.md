@@ -1,21 +1,23 @@
-# scripts
+# Scripts
 
-Doel: utility scripts voor setup en onderhoud.
+Purpose: operational and setup scripts for local development and Phase 1 growth workflows.
 
-## Overzicht
-Deze map bevat scripts die repetitieve taken automatiseren.
+## Available scripts
 
-## Bestanden
-- `setup.sh`: snelle lokale bootstrap
-- `info_scripts.md`: documentatie van deze map
+- `setup.sh`: quick local bootstrap (`pnpm install`, prisma generate, dev server).
+- `import-huggingface.ts`: discovers and imports Hugging Face spaces.
+- `import-github.ts`: discovers and imports GitHub repositories.
+- `import-csv.ts`: imports curated entries from CSV files.
+- `outreach-claiming.ts`: generates or sends claiming outreach for unclaimed imports.
+- `phase1-start.ts`: orchestrates import + outreach startup flow with report output.
 
-## Afhankelijkheden
-- Gebruikt door: ontwikkelaars
-- Hangt af van: pnpm, Node.js, Prisma CLI
+## Report locations
 
-## Patronen
-- Scripts blijven idempotent waar mogelijk
-- Gebruik duidelijke exit-fouten
+- Imports: `agentlink-output/development/reports/imports`
+- Outreach: `agentlink-output/development/reports/outreach`
+- Phase 1 run summary: `agentlink-output/development/reports/phase1`
 
-## Laatste wijziging
-- 2026-02-14: setup script toegevoegd.
+## Notes
+
+- Most scripts support `--dryRun=true` for safe previews.
+- Scripts are intended to be idempotent where possible (duplicates are skipped).

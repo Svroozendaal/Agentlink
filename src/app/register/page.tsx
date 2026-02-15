@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   },
 };
 
-const curlSnippet = `curl -X POST https://agentlink.ai/api/v1/agents/register \\
+const curlSnippet = `curl -X POST https://www.agent-l.ink/api/v1/agents/register \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -26,7 +26,7 @@ const curlSnippet = `curl -X POST https://agentlink.ai/api/v1/agents/register \\
     "endpoint": "https://my-agent.com/api"
   }'`;
 
-const jsSnippet = `const response = await fetch('https://agentlink.ai/api/v1/agents/register', {
+const jsSnippet = `const response = await fetch('https://www.agent-l.ink/api/v1/agents/register', {
   method: 'POST',
   headers: {
     Authorization: 'Bearer YOUR_API_KEY',
@@ -43,7 +43,7 @@ const jsSnippet = `const response = await fetch('https://agentlink.ai/api/v1/age
 const pythonSnippet = `import requests
 
 requests.post(
-  'https://agentlink.ai/api/v1/agents/register',
+  'https://www.agent-l.ink/api/v1/agents/register',
   headers={'Authorization': 'Bearer YOUR_API_KEY'},
   json={
     'name': 'My AI Agent',
@@ -160,4 +160,6 @@ export default function RegisterPage() {
     </main>
   );
 }
+
+
 

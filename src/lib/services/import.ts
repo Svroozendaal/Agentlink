@@ -12,6 +12,8 @@ export interface ImportResult {
   imported: number;
   skipped: number;
   errors: number;
+  skippedDetails?: string[];
+  errorDetails?: string[];
 }
 
 async function existsBySimilarName(name: string) {
@@ -34,11 +36,14 @@ export async function importFromSource(sourcePlatform: string, data: RawAgentDat
   let imported = 0;
   let skipped = 0;
   let errors = 0;
+  const skippedDetails: string[] = [];
+  const errorDetails: string[] = [];
 
   for (const item of data) {
     try {
       if (!item.sourceUrl) {
         skipped += 1;
+        skippedDetails.push(`${item.name ?? "unknown"}: missing source URL`);
         continue;
       }
 
@@ -49,6 +54,7 @@ export async function importFromSource(sourcePlatform: string, data: RawAgentDat
 
       if (existingSource || (item.name && (await existsBySimilarName(item.name)))) {
         skipped += 1;
+        skippedDetails.push(`${item.sourceUrl}: duplicate by source URL or similar name`);
         continue;
       }
 
@@ -70,12 +76,20 @@ export async function importFromSource(sourcePlatform: string, data: RawAgentDat
       });
 
       imported += 1;
-    } catch {
+    } catch (error) {
       errors += 1;
+      const message = error instanceof Error ? error.message : "unknown import error";
+      errorDetails.push(`${item.sourceUrl}: ${message}`);
     }
   }
 
-  return { imported, skipped, errors };
+  return {
+    imported,
+    skipped,
+    errors,
+    skippedDetails,
+    errorDetails,
+  };
 }
 
 export async function importFromHuggingFace(options?: { limit?: number; minLikes?: number }) {

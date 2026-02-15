@@ -1,4 +1,4 @@
-import { ImportStatus, PricingModel } from "@prisma/client";
+import { AgentModerationStatus, ImportStatus, PricingModel } from "@prisma/client";
 
 import { db } from "@/lib/db";
 import { createActivityEvent } from "@/lib/services/activity";
@@ -95,7 +95,13 @@ export async function startClaim(importedAgentId: string, userId: string) {
   };
 }
 
-async function createProfileFromImport(importedAgentId: string, ownerId: string) {
+async function createProfileFromImport(
+  importedAgentId: string,
+  ownerId: string,
+  options?: { autoApprove?: boolean },
+) {
+  const autoApprove = options?.autoApprove === true;
+
   const importedAgent = await db.importedAgent.findUnique({
     where: { id: importedAgentId },
   });
@@ -121,7 +127,12 @@ async function createProfileFromImport(importedAgentId: string, ownerId: string)
       endpointUrl: importedAgent.endpointUrl,
       websiteUrl: importedAgent.websiteUrl,
       pricingModel: PricingModel.FREE,
-      isPublished: true,
+      isPublished: autoApprove,
+      moderationStatus: autoApprove
+        ? AgentModerationStatus.APPROVED
+        : AgentModerationStatus.PENDING,
+      moderatedAt: autoApprove ? new Date() : null,
+      moderatedById: autoApprove ? ownerId : null,
       isVerified: true,
       isEarlyAdopter: false,
     },
@@ -166,10 +177,13 @@ export async function completeClaim(importedAgentId: string, userId: string) {
     throw new AgentServiceError(403, "FORBIDDEN", "This claim belongs to another user");
   }
 
-  return createProfileFromImport(importedAgentId, userId);
+  return createProfileFromImport(importedAgentId, userId, {
+    autoApprove: false,
+  });
 }
 
 export async function adminApproveClaim(importedAgentId: string, adminUserId: string) {
-  return createProfileFromImport(importedAgentId, adminUserId);
+  return createProfileFromImport(importedAgentId, adminUserId, {
+    autoApprove: true,
+  });
 }
-

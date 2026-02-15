@@ -1,111 +1,52 @@
-# 📊 Agent: Database
+﻿# Agent: Database
 
-> Verantwoordelijk voor Prisma schema, migraties, queries, seeding en data-integriteit.
+Responsible for Prisma schema, migrations, query correctness, data integrity, and persistence-related tradeoffs.
 
----
+## Role And Responsibilities
+Use this agent when:
+- changing `prisma/schema.prisma`,
+- creating or applying migrations,
+- tuning query behavior and indexes,
+- modifying seed/data lifecycle behavior.
 
-## Rol & Verantwoordelijkheden
-
-De Database agent wordt geactiveerd wanneer:
-- Het Prisma schema gewijzigd moet worden (nieuwe modellen, relaties, velden)
-- Er een migratie aangemaakt of uitgevoerd moet worden
-- Er seed data geschreven of bijgewerkt moet worden
-- Er complexe queries geoptimaliseerd moeten worden
-- Er vragen zijn over data modellering
-
-## Regels
-
+## Rules
 ### Schema Design
-1. **Gebruik `snake_case` voor database kolommen** — Prisma mapped dit naar camelCase in TypeScript
-2. **Altijd een `id` (cuid), `createdAt` en `updatedAt`** op elk model
-3. **Soft deletes waar zinvol** — Voeg `deletedAt DateTime?` toe i.p.v. echte deletes voor kritieke data
-4. **Expliciete relatie namen** — Gebruik `@relation(name: "...")` bij ambigue relaties
-5. **Indexen op veelgebruikte queries** — `@@index([veld])` voor velden waarop gefilterd/gesorteerd wordt
-6. **Enums voor vaste waarden** — Gebruik Prisma enums, niet strings
+1. Keep naming and mapping conventions consistent (`@map` for snake_case DB columns).
+2. Use enums for constrained states.
+3. Add indexes for high-frequency filters/sorts.
+4. Model ownership and relation cardinality explicitly.
 
-### Migraties
-1. **Nooit migraties handmatig editen** na ze gegenereerd zijn
-2. **Beschrijvende namen**: `npx prisma migrate dev --name add_agent_skills_table`
-3. **Eén logische wijziging per migratie** — Niet meerdere onverwante wijzigingen combineren
-4. **Test migraties op een lege database** — `npx prisma migrate reset` moet werken
-5. **NOOIT data-destructieve migraties zonder toestemming** — Kolom verwijderen, type wijzigen, etc.
+### Migrations
+1. Keep each migration focused on one logical change.
+2. Never run destructive schema changes without explicit approval.
+3. Validate migrations locally (`prisma generate`, migrate flow).
 
 ### Queries
-1. **Gebruik altijd `src/lib/db.ts`** — Nooit direct `@prisma/client` importeren
-2. **Select alleen wat je nodig hebt** — Gebruik `select` of `include` bewust
-3. **Paginatie standaard** — Elke list-query heeft `take` en `skip` (of cursor-based)
-4. **Transacties voor multi-step operaties** — `db.$transaction([...])`
-5. **Geen N+1 queries** — Gebruik `include` voor relaties die je nodig hebt
+1. Use `src/lib/db.ts` Prisma singleton.
+2. Select only needed fields in hot paths.
+3. Enforce pagination for list endpoints.
+4. Use transactions where consistency requires it.
 
-### Seeding
-1. **Seed data is deterministisch** — Zelfde seed = zelfde resultaat
-2. **Seed bevat realistische voorbeelden** — Niet "test123" maar echte-wereld data
-3. **Seed is idempotent** — Kan meerdere keren gerund worden zonder errors (gebruik `upsert`)
+## Patterns
+### Schema update flow
+1. Update `prisma/schema.prisma`.
+2. Create migration.
+3. Regenerate Prisma client.
+4. Update service logic and docs.
 
-## Patronen
+### Query review flow
+1. Validate filters and indexes.
+2. Check for N+1 patterns.
+3. Confirm authorization-sensitive filters are applied.
 
-### Nieuw Model
-```prisma
-model AgentProfile {
-  id          String   @id @default(cuid())
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-  
-  // Velden hier
-  name        String
-  slug        String   @unique
-  
-  // Relaties
-  owner       User     @relation(fields: [ownerId], references: [id])
-  ownerId     String   @map("owner_id")
-  
-  // Indexen
-  @@index([ownerId])
-  @@index([slug])
-  @@map("agent_profiles")
-}
-```
+## Quality Check
+- [ ] Schema stays consistent with existing conventions.
+- [ ] Index coverage matches real query patterns.
+- [ ] Migration is safe and scoped.
+- [ ] Docs reflect model changes.
 
-### Query Helper Pattern
-```typescript
-// src/lib/queries/agents.ts
-import { db } from '@/lib/db';
-import type { AgentListParams } from '@/types/agent';
-
-export async function getAgentsList(params: AgentListParams) {
-  const { page = 1, limit = 20, search, skills } = params;
-  
-  return db.agentProfile.findMany({
-    where: {
-      ...(search && { name: { contains: search, mode: 'insensitive' } }),
-      ...(skills && { skills: { hasSome: skills } }),
-    },
-    take: limit,
-    skip: (page - 1) * limit,
-    orderBy: { createdAt: 'desc' },
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      description: true,
-      skills: true,
-      rating: true,
-    },
-  });
-}
-```
-
-## Kwaliteitscheck
-Na elke taak:
-- [ ] Is het schema consistent met bestaande conventies?
-- [ ] Zijn alle relaties correct en geïndexeerd?
-- [ ] Werkt `npx prisma migrate reset` zonder errors?
-- [ ] Is de seed data bijgewerkt?
-- [ ] Is `prisma/info_prisma.md` bijgewerkt?
-
-## Zelfverbetering
-Na elke taak, evalueer:
-- Zijn er queries die N+1 problemen kunnen veroorzaken?
-- Zijn er modellen die te veel velden krijgen? → Overweeg opsplitsing
-- Zijn er veelvoorkomende query-patronen die een helper verdienen?
-- Kan de seed data uitgebreider/realistischer?
+## Self-Improvement
+After each task, capture:
+- missing indexes,
+- duplicated query patterns that should become helpers,
+- data model smells that should be split/refined.

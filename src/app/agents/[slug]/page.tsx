@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { notFound } from "next/navigation";
+import { Role } from "@prisma/client";
 
 import { AgentContactForm } from "@/components/agents/AgentContactForm";
 import { AgentEndorsementActions } from "@/components/agents/AgentEndorsementActions";
@@ -55,13 +56,15 @@ function endpointMethodLabel(method: string | null, type: string) {
 async function AgentProfileContent({
   slug,
   viewerUserId,
+  viewerRole,
   activeTab,
 }: {
   slug: string;
   viewerUserId?: string;
+  viewerRole?: Role;
   activeTab: ProfileTab;
 }) {
-  const agent = await getAgentBySlug(slug, viewerUserId);
+  const agent = await getAgentBySlug(slug, viewerUserId, viewerRole);
 
   if (!agent) {
     notFound();
@@ -599,7 +602,12 @@ export default async function AgentProfilePage({
 
   return (
     <main className="mx-auto w-full max-w-6xl px-6 py-10 sm:py-14">
-      <AgentProfileContent slug={slug} viewerUserId={session?.user?.id} activeTab={activeTab} />
+      <AgentProfileContent
+        slug={slug}
+        viewerUserId={session?.user?.id}
+        viewerRole={session?.user?.role ?? Role.USER}
+        activeTab={activeTab}
+      />
     </main>
   );
 }

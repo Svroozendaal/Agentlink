@@ -6,6 +6,7 @@ import {
   createAgentProfile,
   listAgents,
 } from "@/lib/services/agents";
+import { getInviteByToken } from "@/lib/services/invites";
 import {
   CreateAgentSchema,
   ListAgentsQuerySchema,
@@ -61,8 +62,29 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
+    const inviteToken =
+      typeof body?.inviteToken === "string" && body.inviteToken.trim().length > 0
+        ? body.inviteToken.trim()
+        : undefined;
     const validatedBody = CreateAgentSchema.parse(body);
-    const createdAgent = await createAgentProfile(validatedBody, authContext.user.id);
+    let createOptions: { autoApprove?: boolean; moderatedById?: string } | undefined;
+
+    if (inviteToken) {
+      const invite = await getInviteByToken(inviteToken);
+      if (invite && invite.usedCount >= 1) {
+        createOptions = {
+          autoApprove: true,
+          moderatedById: invite.createdByUserId,
+        };
+      }
+    }
+
+    const createdAgent = await createAgentProfile(
+      validatedBody,
+      authContext.user.id,
+      authContext.user.role,
+      createOptions,
+    );
 
     return NextResponse.json({ data: createdAgent }, { status: 201 });
   } catch (error) {

@@ -1,24 +1,39 @@
-# docs
+﻿# Documentation Index (`docs/`)
 
-Doel: centrale projectdocumentatie, besluiten, backlog en API-specificatie.
+## Purpose
+- Keep product, architecture, API, and operational documentation aligned with the live codebase.
+- Provide a single navigation layer so contributors can find the right document quickly.
+- Define documentation ownership and update workflow.
 
-## Overzicht
-Deze map bevat de documentatiebron voor architectuurbesluiten en planning.
+## Documentation Routing
+- Start here for orientation: `docs/site-overview.md`
+- Full prompt-ready context for LLMs: `docs/chatgpt-context.md`
+- API endpoint catalog and payloads: `docs/api-spec.md`
+- Product-plan fit and delivery status: `docs/productplan-alignment.md`
+- Recruitment automation details: `docs/recruitment-system.md`
+- Growth operations runbook: `docs/growth-playbook.md`
+- Protocol-specific references:
+  - `docs/mcp.md`
+  - `docs/connect.md`
+  - `docs/playground.md`
+- Domain cutover runbook:
+  - `docs/ops/domain-cutover-agent-l-ink.md`
+- Search and crawler discoverability runbook:
+  - `docs/ops/google-and-agent-discovery.md`
+- Architectural records and planning:
+  - `docs/decisions.md`
+  - `docs/backlog.md`
+  - `docs/seo-checklist.md`
 
-## Bestanden
-- `decisions.md`: ADRs en technische keuzes
-- `backlog.md`: TODOs en verbeteringen
-- `api-spec.md`: documentatie van auth, API keys, CRUD, discovery en review/card endpoints
-- `productplan-alignment.md`: mapping van productplan naar huidige implementatie
-- `info_docs.md`: uitleg van deze map
+## Folder Map
+- `docs/app/info_app.md`: web routes, route groups, UI entrypoints.
+- `docs/api/info_api.md`: API domains, auth model, contracts by endpoint family.
+- `docs/domain/info_domain.md`: Prisma model map, service boundaries, business logic.
+- `docs/ops/info_ops.md`: environments, deployment, migrations, testing, monitoring.
 
-## Afhankelijkheden
-- Gebruikt door: alle contributors
-- Hangt af van: projectwijzigingen in `src/`, `prisma/`, `tests/`
-
-## Patronen
-- Documenteer keuzes direct in ADR formaat
-- Houd backlog opgesplitst op prioriteit
-
-## Laatste wijziging
-- 2026-02-14: productplan-alignment voor reviews/card gedocumenteerd.
+## Update Workflow
+1. Update code.
+2. Update the matching `info_*.md` file first.
+3. Update domain-specific docs (`api-spec`, `recruitment-system`, etc.).
+4. Update `docs/chatgpt-context.md` when architecture, data contracts, or route topology changes.
+5. Log major decisions in `docs/decisions.md` and follow-up work in `docs/backlog.md`.

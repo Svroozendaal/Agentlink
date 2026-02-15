@@ -1,38 +1,28 @@
-# Backlog
+﻿# Backlog
 
-## Hoge prioriteit
-- [ ] [SECURITY] Voeg rate limiting toe op auth, reviews, endorsements en messaging endpoints
-- [ ] [SECURITY] Voeg admin-moderatie UI toe voor flagged reviews
-- [ ] [RELIABILITY] Migreer webhook delivery naar queue-based processing (BullMQ/Redis)
-- [ ] [PERF] Voeg realtime updates toe voor messaging (SSE of WebSocket)
+## High Priority
+- [ ] [SECURITY] Add distributed rate limiting (Redis or equivalent) for auth, reviews, messaging, connect, and playground.
+- [ ] [SECURITY] Add admin moderation UI for flagged reviews.
+- [ ] [RELIABILITY] Move webhook delivery to queue-based retries (instead of in-request fan-out).
+- [ ] [RELIABILITY] Add job scheduler for automated endpoint health checks and daily metric snapshots.
 
-## Middel prioriteit
-- [ ] [SECURITY] Voeg auth audit logging toe (sign-in, key create, key revoke)
-- [ ] [IMPROVE] Voeg basis CI checks toe (lint/build/test)
-- [ ] [FEAT] Voeg dashboard webhooks beheer UI tab toe in edit-flow
-- [ ] [FEAT] Voeg onboarding welcome flow toe voor nieuwe users
-- [ ] [IMPROVE] Tune search ranking (gewichten op naam/description/verified/rating)
-- [ ] [FEAT] Voeg semantische zoeklaag toe (vector/embeddings of Elasticsearch)
-- [ ] [FEAT] Voeg basis verificatieflow toe (e-mail/domeinbewijs)
+## Medium Priority
+- [ ] [GROWTH] Implement outbound email delivery provider for outreach and recruitment fallback.
+- [ ] [FEATURE] Implement `GITHUB_PR` recruitment executor.
+- [ ] [FEATURE] Add real-time dashboard messaging updates (SSE or WebSocket).
+- [ ] [FEATURE] Add domain verification workflow for agent ownership trust.
+- [ ] [PERFORMANCE] Tune search ranking weights and add autocomplete.
+- [ ] [OBSERVABILITY] Add structured audit logs for auth events and admin actions.
 
-## Lage prioriteit
-- [ ] [IMPROVE] Voeg architectuurdiagram toe aan docs
+## Low Priority
+- [ ] [DOCS] Add architecture diagrams for API domain boundaries and growth/recruitment pipelines.
+- [ ] [FEATURE] Add semantic/vector search layer when dataset scale requires it.
 
-## Afgerond
-- [x] [FEAT] Social layer: uitgebreide reviews, endorsements en activity feed API (2026-02-14)
-- [x] [FEAT] Messaging + webhooks API en dashboard inbox (`/dashboard/messages`) (2026-02-14)
-- [x] [FEAT] Discovery uitbreiding: well-known, OpenAPI, A2A, sitemap, robots (2026-02-14)
-- [x] [FEAT] Legal/docs/error pagina's toegevoegd (2026-02-14)
-- [x] [FEAT] Productplan alignment geupdate na uitbreiding (2026-02-14)
-- [x] [FEAT] Productplan alignment: reviews + ratings + machine-readable agent card endpoint (2026-02-14)
-- [x] [FEAT] Fase 3 discovery search API + directory + landing page (2026-02-14)
-- [x] [FEAT] Fase 2 agent CRUD API, self-registration endpoint en dashboard create-flow (2026-02-14)
-- [x] [FEAT] Fase 1 database schema, auth en API key management (2026-02-14)
-- [x] [CHORE] Fase 0 projectskelet opgezet (2026-02-14)
-
-## New backlog from prompts 6-8
-- [ ] [RELIABILITY] Add scheduled health-check jobs (cron) for endpoint monitoring
-- [ ] [PERF] Add dynamic OG image generation for agents (`/api/og/[slug]`)
-- [ ] [GROWTH] Automate import jobs (daily Hugging Face/GitHub sync)
-- [ ] [GROWTH] Add outbound email integration for outreach delivery
-- [ ] [FEAT] Add WebSocket/streaming support for live endpoint playground responses
+## Completed
+- [x] [FEATURE] Core discovery, registration, and profile pages
+- [x] [FEATURE] Reviews, endorsements, and public activity feed
+- [x] [FEATURE] Messaging, webhooks, endpoint management, playground, and connect
+- [x] [FEATURE] MCP endpoint and well-known discovery endpoints
+- [x] [FEATURE] Growth engine (imports, claims, invites, outreach, metrics)
+- [x] [FEATURE] Automated recruitment pipeline with opt-out enforcement
+- [x] [DOCS] Reworked documentation structure with folder-level `info_*.md` files and ChatGPT context file

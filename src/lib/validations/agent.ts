@@ -142,6 +142,10 @@ export const SearchAgentsQuerySchema = z.object({
     .string()
     .optional()
     .transform((value) => parseCommaSeparated(value)),
+  tags: z
+    .string()
+    .optional()
+    .transform((value) => parseCommaSeparated(value)),
   protocols: z
     .string()
     .optional()
@@ -159,6 +163,7 @@ export const SearchAgentsQuerySchema = z.object({
       return value;
     }),
   pricing: z.nativeEnum(PricingModel).optional(),
+  minRating: z.coerce.number().min(1).max(5).optional(),
   verified: z.preprocess(parseBooleanInput, z.boolean().optional()),
   playground: z.preprocess(parseBooleanInput, z.boolean().optional()),
   connect: z.preprocess(parseBooleanInput, z.boolean().optional()),
@@ -166,7 +171,7 @@ export const SearchAgentsQuerySchema = z.object({
     .string()
     .optional()
     .transform((value) => parseCommaSeparated(value)),
-  sort: z.enum(["relevance", "rating", "newest", "name"]).default("relevance"),
+  sort: z.enum(["relevance", "rating", "reviews", "endorsements", "newest", "name"]).default("relevance"),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(50).default(12),
 });

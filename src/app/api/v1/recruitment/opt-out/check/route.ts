@@ -1,0 +1,34 @@
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+
+import { checkOptOutDomain } from "@/lib/recruitment/opt-out";
+import { RecruitmentOptOutCheckQuerySchema } from "@/lib/validations/recruitment";
+
+export async function GET(req: NextRequest) {
+  try {
+    const query = RecruitmentOptOutCheckQuerySchema.parse(
+      Object.fromEntries(req.nextUrl.searchParams.entries()),
+    );
+
+    const result = await checkOptOutDomain(query.domain);
+    return NextResponse.json({ data: result });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "Invalid query",
+            details: error.issues,
+          },
+        },
+        { status: 400 },
+      );
+    }
+
+    return NextResponse.json(
+      { error: { code: "INTERNAL_ERROR", message: "Internal server error" } },
+      { status: 500 },
+    );
+  }
+}

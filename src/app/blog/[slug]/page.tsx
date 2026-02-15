@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { JSX } from "react";
@@ -7,6 +7,10 @@ import { getAllBlogPosts, getBlogPostBySlug } from "@/lib/services/blog";
 
 interface BlogPostPageProps {
   params: Promise<{ slug: string }>;
+}
+
+function getBaseUrl() {
+  return process.env.NEXTAUTH_URL ?? "https://www.agent-l.ink";
 }
 
 function renderMarkdown(content: string) {
@@ -105,6 +109,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
   return {
     title: `${post.title} | AgentLink`,
     description: post.description,
+    keywords: post.keywords,
     alternates: {
       canonical: `/blog/${post.slug}`,
     },
@@ -112,7 +117,15 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
       title: post.title,
       description: post.description,
       type: "article",
+      url: `/blog/${post.slug}`,
       locale: "en_US",
+      images: ["/opengraph-image"],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.description,
+      images: ["/opengraph-image"],
     },
   };
 }
@@ -123,15 +136,23 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   if (!post) {
     notFound();
   }
+  const baseUrl = getBaseUrl();
 
   const articleJsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
     headline: post.title,
     datePublished: post.date,
+    dateModified: post.date,
     author: { "@type": "Person", name: post.author },
+    publisher: {
+      "@type": "Organization",
+      name: "AgentLink",
+      url: baseUrl,
+    },
     description: post.description,
-    mainEntityOfPage: `https://agentlink.ai/blog/${post.slug}`,
+    mainEntityOfPage: `${baseUrl}/blog/${post.slug}`,
+    keywords: post.keywords.join(", "),
   };
 
   const allPosts = await getAllBlogPosts();
@@ -172,3 +193,5 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     </main>
   );
 }
+
+

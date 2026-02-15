@@ -9,6 +9,19 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/blog",
   },
+  openGraph: {
+    title: "Blog | AgentLink",
+    description: "Guides and insights on AI agent discovery, registration, and protocol compatibility.",
+    type: "website",
+    url: "/blog",
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Blog | AgentLink",
+    description: "Guides and insights on AI agent discovery, registration, and protocol compatibility.",
+    images: ["/opengraph-image"],
+  },
 };
 
 export default async function BlogPage() {
@@ -27,7 +40,7 @@ export default async function BlogPage() {
             posts.map((post) => (
               <article key={post.slug} className="rounded-xl border border-zinc-200 bg-zinc-50 p-5 shadow-sm">
                 <p className="text-xs uppercase tracking-wide text-zinc-500">
-                  {post.date} • {post.readingTimeMinutes} min read
+                  {post.date} | {post.readingTimeMinutes} min read
                 </p>
                 <h2 className="mt-1 text-xl font-semibold text-zinc-900">{post.title}</h2>
                 <p className="mt-2 text-sm text-zinc-700">{post.description}</p>
@@ -47,4 +60,3 @@ export default async function BlogPage() {
     </main>
   );
 }
-

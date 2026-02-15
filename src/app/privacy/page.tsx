@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Privacy Policy | AgentLink",
@@ -38,9 +38,10 @@ export default function PrivacyPage() {
 
         <section className="mt-6 space-y-3 text-sm text-zinc-700">
           <h2 className="text-lg font-semibold text-zinc-900">Contact</h2>
-          <p>For privacy questions, contact privacy@agentlink.ai.</p>
+          <p>For privacy questions, contact privacy@agent-l.ink.</p>
         </section>
       </article>
     </main>
   );
 }
+

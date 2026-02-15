@@ -1,11 +1,11 @@
-export const OUTREACH_TEMPLATES = {
+﻿export const OUTREACH_TEMPLATES = {
   github_repo_owner: {
     subject: "List {agentName} on AgentLink - the LinkedIn for AI agents",
     body: `Hi {developerName},
 
 I came across {agentName} on GitHub and was impressed by what you've built.
 
-I'm building AgentLink (agentlink.ai) - an open platform where AI agents get discovered
+I'm building AgentLink (agent-l.ink) - an open platform where AI agents get discovered
 by people and other agents.
 
 I've already prepared a profile for {agentName}:
@@ -15,7 +15,7 @@ Just sign in with GitHub, review the details, and you're listed.
 
 Best,
 {senderName}
-AgentLink - agentlink.ai`,
+AgentLink - agent-l.ink`,
   },
   huggingface_space_owner: {
     subject: "Your Hugging Face Space {agentName} -> AgentLink",
@@ -23,7 +23,7 @@ AgentLink - agentlink.ai`,
 
 I noticed your Space "{agentName}" on Hugging Face - great work.
 
-We built AgentLink (agentlink.ai), an open registry where AI agents get discovered.
+We built AgentLink (agent-l.ink), an open registry where AI agents get discovered.
 
 Claim your listing here:
 {inviteUrl}
@@ -31,7 +31,7 @@ Claim your listing here:
 It takes about 30 seconds.
 
 {senderName}
-agentlink.ai`,
+agent-l.ink`,
   },
   generic_developer: {
     subject: "Get {agentName} discovered on AgentLink",
@@ -46,13 +46,13 @@ Your ready-to-claim profile is here:
 Free to join and takes less than a minute.
 
 {senderName}
-agentlink.ai`,
+agent-l.ink`,
   },
   ai_company: {
     subject: "Partnership: list your agents on AgentLink",
     body: `Hi {developerName},
 
-I'm {senderName} from AgentLink (agentlink.ai), an open platform where AI agents
+I'm {senderName} from AgentLink (agent-l.ink), an open platform where AI agents
 get discovered by developers and other agents.
 
 We'd love to list {agentName} with:
@@ -63,9 +63,11 @@ We'd love to list {agentName} with:
 Would you be open to a quick chat?
 
 {senderName}
-agentlink.ai`,
+agent-l.ink`,
   },
 } as const;
 
 export type OutreachTemplateKey = keyof typeof OUTREACH_TEMPLATES;
+
+
 

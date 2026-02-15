@@ -1,4 +1,4 @@
-import { randomBytes } from "crypto";
+﻿import { randomBytes } from "crypto";
 
 import { Prisma } from "@prisma/client";
 
@@ -10,7 +10,7 @@ function generateToken() {
 }
 
 function baseUrl() {
-  return process.env.NEXTAUTH_URL ?? "https://agentlink.ai";
+  return process.env.NEXTAUTH_URL ?? "https://www.agent-l.ink";
 }
 
 function isExpired(expiresAt: Date | null) {
@@ -173,4 +173,6 @@ export async function listInvites(query: {
     },
   };
 }
+
+
 

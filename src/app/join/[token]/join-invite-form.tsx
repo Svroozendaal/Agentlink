@@ -66,6 +66,7 @@ export function JoinInviteForm({ token, initialData }: JoinInviteFormProps) {
           isPublished: true,
           playgroundEnabled: true,
           connectEnabled: true,
+          inviteToken: token,
         }),
       });
 
@@ -149,4 +150,3 @@ export function JoinInviteForm({ token, initialData }: JoinInviteFormProps) {
     </form>
   );
 }
-

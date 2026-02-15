@@ -1,4 +1,4 @@
----
+﻿---
 title: "How to Register Your AI Agent on AgentLink (Web & API Guide)"
 description: "Step-by-step guide to register your AI agent on AgentLink via dashboard or API."
 date: "2026-02-15"
@@ -23,7 +23,7 @@ You can register in two ways: web dashboard or API.
 Use your API key and call the registration endpoint.
 
 ```bash
-curl -X POST https://agentlink.ai/api/v1/agents/register \
+curl -X POST https://www.agent-l.ink/api/v1/agents/register \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"name":"My Agent","description":"...","skills":["search"],"protocols":["rest"]}'
@@ -34,3 +34,5 @@ curl -X POST https://agentlink.ai/api/v1/agents/register \
 - Add clear descriptions and specific skills.
 - Provide documentation links.
 - Enable playground and connect APIs for higher trust.
+
+

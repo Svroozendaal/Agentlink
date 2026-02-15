@@ -43,6 +43,9 @@ function createPageHref(
   if (query.skills && query.skills.length > 0) {
     params.set("skills", query.skills.join(","));
   }
+  if (query.tags && query.tags.length > 0) {
+    params.set("tags", query.tags.join(","));
+  }
   if (query.protocols && query.protocols.length > 0) {
     params.set("protocols", query.protocols.join(","));
   }
@@ -51,6 +54,9 @@ function createPageHref(
   }
   if (query.pricing) {
     params.set("pricing", query.pricing);
+  }
+  if (query.minRating !== undefined) {
+    params.set("minRating", String(query.minRating));
   }
   if (query.verified !== undefined) {
     params.set("verified", String(query.verified));
@@ -84,10 +90,12 @@ export default async function AgentsDirectoryPage({ searchParams }: AgentsDirect
   const parsedQuery = SearchAgentsQuerySchema.safeParse({
     q: toSingleValue(rawParams.q),
     skills: toCommaValue(rawParams.skills),
+    tags: toCommaValue(rawParams.tags),
     protocols: toCommaValue(rawParams.protocols),
     endpointTypes: toCommaValue(rawParams.endpointTypes),
     category: toSingleValue(rawParams.category),
     pricing: toSingleValue(rawParams.pricing),
+    minRating: toSingleValue(rawParams.minRating),
     verified: toSingleValue(rawParams.verified),
     playground: toSingleValue(rawParams.playground),
     connect: toSingleValue(rawParams.connect),
@@ -104,6 +112,31 @@ export default async function AgentsDirectoryPage({ searchParams }: AgentsDirect
     searchAgents(query),
     getDiscoveryFilterOptions(),
   ]);
+
+  const activeFilters: string[] = [];
+  if (query.category) activeFilters.push(`Category: ${query.category}`);
+  if (query.pricing) activeFilters.push(`Pricing: ${query.pricing}`);
+  if (query.minRating !== undefined) activeFilters.push(`Rating ${query.minRating}+`);
+  if (query.verified) activeFilters.push("Verified");
+  if (query.playground) activeFilters.push("Playground");
+  if (query.connect) activeFilters.push("Connect");
+  if (query.skills && query.skills.length > 0) activeFilters.push(...query.skills.map((skill) => `Skill: ${skill}`));
+  if (query.tags && query.tags.length > 0) activeFilters.push(...query.tags.map((tag) => `Tag: ${tag}`));
+  if (query.protocols && query.protocols.length > 0) activeFilters.push(...query.protocols.map((protocol) => `Protocol: ${protocol}`));
+  if (query.endpointTypes && query.endpointTypes.length > 0) {
+    activeFilters.push(...query.endpointTypes.map((endpointType) => `Endpoint: ${endpointType}`));
+  }
+
+  const clearFiltersParams = new URLSearchParams();
+  if (query.q) {
+    clearFiltersParams.set("q", query.q);
+  }
+  if (query.limit !== 12) {
+    clearFiltersParams.set("limit", String(query.limit));
+  }
+  const clearFiltersHref = clearFiltersParams.toString().length > 0
+    ? `/agents?${clearFiltersParams.toString()}`
+    : "/agents";
 
   const previousPage = query.page > 1 ? createPageHref(query.page - 1, query) : null;
   const nextPage =
@@ -124,10 +157,12 @@ export default async function AgentsDirectoryPage({ searchParams }: AgentsDirect
             initialQuery={query.q}
             preservedParams={{
               skills: query.skills,
+              tags: query.tags,
               protocols: query.protocols,
               endpointTypes: query.endpointTypes,
               category: query.category,
               pricing: query.pricing,
+              minRating: query.minRating !== undefined ? String(query.minRating) : undefined,
               verified: query.verified !== undefined ? String(query.verified) : undefined,
               playground: query.playground !== undefined ? String(query.playground) : undefined,
               connect: query.connect !== undefined ? String(query.connect) : undefined,
@@ -135,6 +170,26 @@ export default async function AgentsDirectoryPage({ searchParams }: AgentsDirect
               limit: String(query.limit),
             }}
           />
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {filterOptions.categories.slice(0, 8).map((category) => (
+            <a
+              key={`category-${category}`}
+              href={`/agents?category=${encodeURIComponent(category)}`}
+              className="rounded-full border border-zinc-300 bg-zinc-50 px-3 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-100"
+            >
+              {category}
+            </a>
+          ))}
+          {filterOptions.tags.slice(0, 8).map((tag) => (
+            <a
+              key={`tag-${tag}`}
+              href={`/agents?tags=${encodeURIComponent(tag)}`}
+              className="rounded-full border border-sky-300 bg-sky-50 px-3 py-1 text-xs font-medium text-sky-700 hover:bg-sky-100"
+            >
+              #{tag}
+            </a>
+          ))}
         </div>
       </section>
 
@@ -144,10 +199,12 @@ export default async function AgentsDirectoryPage({ searchParams }: AgentsDirect
           query={{
             q: query.q,
             skills: query.skills,
+            tags: query.tags,
             protocols: query.protocols,
             endpointTypes: query.endpointTypes,
             category: query.category,
             pricing: query.pricing,
+            minRating: query.minRating,
             verified: query.verified,
             playground: query.playground,
             connect: query.connect,
@@ -158,6 +215,26 @@ export default async function AgentsDirectoryPage({ searchParams }: AgentsDirect
         />
 
         <div>
+          {activeFilters.length > 0 ? (
+            <div className="mb-4 rounded-xl border border-zinc-200 bg-zinc-50 p-3">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-medium text-zinc-800">Active filters</p>
+                <a href={clearFiltersHref} className="text-xs font-semibold text-sky-700 hover:text-sky-800">
+                  Clear all
+                </a>
+              </div>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {activeFilters.slice(0, 12).map((label) => (
+                  <span
+                    key={label}
+                    className="rounded-full border border-zinc-300 bg-white px-2.5 py-1 text-xs text-zinc-700"
+                  >
+                    {label}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ) : null}
           <div className="mb-4 flex items-center justify-between gap-3">
             <p className="text-sm text-zinc-600">
               <strong className="text-zinc-900">{result.meta.total}</strong> results found

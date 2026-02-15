@@ -7,6 +7,22 @@ import { listOwnedAgents } from "@/lib/services/agents";
 
 import { AgentDeleteButton } from "./agent-delete-button";
 
+function getStatusLabel(input: { isPublished: boolean; moderationStatus: string }) {
+  if (input.isPublished) {
+    return "Published";
+  }
+
+  if (input.moderationStatus === "PENDING") {
+    return "Pending approval";
+  }
+
+  if (input.moderationStatus === "REJECTED") {
+    return "Rejected";
+  }
+
+  return "Draft";
+}
+
 export default async function DashboardAgentsPage() {
   const session = await getServerSession(authOptions);
 
@@ -41,7 +57,7 @@ export default async function DashboardAgentsPage() {
               <div>
                 <h2 className="text-lg font-semibold text-zinc-900">{agent.name}</h2>
                 <p className="mt-1 text-sm text-zinc-600">
-                  Status: {agent.isPublished ? "Published" : "Draft"}
+                  Status: {getStatusLabel(agent)}
                 </p>
                 <p className="mt-1 text-sm text-zinc-600">
                   Rating:{" "}

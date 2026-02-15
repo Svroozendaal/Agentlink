@@ -3,31 +3,44 @@
 import type { FormEvent } from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import type { AgentModerationStatus } from "@prisma/client";
 
 interface EditAgentFormProps {
   slug: string;
+  canPublishImmediately: boolean;
   initialValues: {
     name: string;
     description: string;
     longDescription: string;
     isPublished: boolean;
+    moderationStatus: AgentModerationStatus;
+    moderationNote: string;
     acceptsMessages: boolean;
     playgroundEnabled: boolean;
     connectEnabled: boolean;
   };
 }
 
-export function EditAgentForm({ slug, initialValues }: EditAgentFormProps) {
+export function EditAgentForm({ slug, canPublishImmediately, initialValues }: EditAgentFormProps) {
   const router = useRouter();
   const [name, setName] = useState(initialValues.name);
   const [description, setDescription] = useState(initialValues.description);
   const [longDescription, setLongDescription] = useState(initialValues.longDescription);
-  const [isPublished, setIsPublished] = useState(initialValues.isPublished);
+  const [isPublished, setIsPublished] = useState(
+    initialValues.isPublished || initialValues.moderationStatus === "PENDING",
+  );
   const [acceptsMessages, setAcceptsMessages] = useState(initialValues.acceptsMessages);
   const [playgroundEnabled, setPlaygroundEnabled] = useState(initialValues.playgroundEnabled);
   const [connectEnabled, setConnectEnabled] = useState(initialValues.connectEnabled);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const moderationLabel =
+    initialValues.moderationStatus === "APPROVED"
+      ? "Approved"
+      : initialValues.moderationStatus === "PENDING"
+        ? "Pending admin review"
+        : "Rejected";
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -141,8 +154,26 @@ export function EditAgentForm({ slug, initialValues }: EditAgentFormProps) {
           checked={isPublished}
           onChange={(event) => setIsPublished(event.target.checked)}
         />
-        Published
+        {canPublishImmediately || initialValues.moderationStatus === "APPROVED"
+          ? "Published"
+          : "Request admin approval"}
       </label>
+
+      {!canPublishImmediately ? (
+        <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-700">
+          <p>
+            Moderation status: <strong>{moderationLabel}</strong>
+          </p>
+          {initialValues.moderationNote ? (
+            <p className="mt-1 text-xs text-zinc-600">Admin note: {initialValues.moderationNote}</p>
+          ) : null}
+          {initialValues.moderationStatus !== "APPROVED" ? (
+            <p className="mt-1 text-xs text-zinc-600">
+              Check the approval box and save to submit this profile for review.
+            </p>
+          ) : null}
+        </div>
+      ) : null}
 
       {error ? <p className="text-sm text-rose-700">{error}</p> : null}
 

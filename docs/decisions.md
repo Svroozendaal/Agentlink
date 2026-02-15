@@ -1,153 +1,124 @@
-# Decisions
+﻿# Architecture Decisions (ADR)
 
-## ADR-0001: Tech stack keuze
-
-- Datum: 2026-02-14
+## ADR-0001: Core Stack
+- Date: 2026-02-14
 - Status: Accepted
 
 ### Context
-AgentLink start als nieuw platform en heeft een complete full-stack basis nodig met lage opstartcomplexiteit.
+A single full-stack codebase was needed for rapid delivery and maintainability.
 
-### Keuze
-We gebruiken Next.js + TypeScript + Prisma + PostgreSQL + Railway.
+### Decision
+Use Next.js (App Router) + TypeScript + Prisma + PostgreSQL.
 
-### Reden
-- Full-stack in een codebase
-- Type safety end-to-end
-- Goedkoop starten en later schaalbaar
-- Heldere developer ervaring met goede tooling
+### Consequences
+- Unified frontend/backend deployment.
+- Prisma-driven data workflow.
+- PostgreSQL powers both relational data and initial search/relevance.
 
-### Consequenties
-- Backend en frontend deployment zijn aan elkaar gekoppeld
-- Prisma bepaalt de database workflow
-- PostgreSQL full-text search is initieel voldoende
-
-## ADR-0002: Auth strategie in fase 1
-
-- Datum: 2026-02-14
+## ADR-0002: Authentication Model
+- Date: 2026-02-14
 - Status: Accepted
 
 ### Context
-Fase 1 vraagt om een veilige maar compacte authbasis voor webgebruikers en API-consumers.
+The platform serves both interactive web users and API-driven automations.
 
-### Keuze
-- NextAuth met Prisma adapter voor websessies (database strategy)
-- GitHub OAuth als enige loginprovider in v1
-- API keys als tweede authmethode voor publieke API integraties
-- API keys gehashed opslaan met SHA-256
+### Decision
+Use dual auth:
+- NextAuth sessions for web UI.
+- API keys for programmatic API access.
 
-### Reden
-- OAuth-only versnelt implementatie en reduceert wachtwoordcomplexiteit
-- Database sessies geven server-side controle over actieve sessies
-- API keys ondersteunen agent-to-agent en scriptintegraties
+### Consequences
+- Clear separation of interactive and machine access.
+- API keys are hashed at rest and only shown once.
+- Session-only behavior exists for certain endpoints (for example API key self-management).
 
-### Consequenties
-- Geen email/password login in v1
-- Key plaintext is alleen zichtbaar bij creatie
-- Rate limiting en audit logging moeten in vervolgstap worden toegevoegd
-
-## ADR-0003: Shadow database configuratie voor migraties
-
-- Datum: 2026-02-14
+## ADR-0003: Service-Layer Business Logic
+- Date: 2026-02-14
 - Status: Accepted
 
 ### Context
-`prisma migrate dev` heeft in sommige omgevingen expliciet een shadow database URL nodig.
+Route handlers were becoming repetitive and harder to test.
 
-### Keuze
-`SHADOW_DATABASE_URL` wordt ondersteund in `prisma/schema.prisma` voor stabiele lokale migraties.
+### Decision
+Keep route handlers thin and place business logic in `src/lib/services/*`.
 
-### Reden
-- Betrouwbaardere migratieflow bij beperkte database permissies
-- Minder setup-frictie voor contributors
+### Consequences
+- Better testability and consistency.
+- Shared error handling via domain-specific service errors.
 
-### Consequenties
-- Voor lokale migratie kan extra env var nodig zijn
-- Productie-runtime gebruikt nog steeds primair `DATABASE_URL`
-
-## ADR-0004: Agent businesslogica via service-laag
-
-- Datum: 2026-02-14
+## ADR-0004: Public Slug As Primary Identifier
+- Date: 2026-02-14
 - Status: Accepted
 
 ### Context
-Fase 2 introduceert meerdere agent endpoints met gedeelde regels (slug uniciteit, ownership checks, publicatiegedrag).
+Public profile URLs must be stable and human-readable.
 
-### Keuze
-Agentlogica staat in `src/lib/services/agents.ts`, terwijl route handlers enkel validatie/auth/HTTP-responses afhandelen.
+### Decision
+Expose and route by `slug` for public resources.
 
-### Reden
-- Minder duplicatie tussen routes en serverpagina's
-- Eenduidige foutafhandeling via `AgentServiceError`
-- Beter testbaar domeingedrag
+### Consequences
+- Better UX and SEO.
+- Slug uniqueness and rename behavior must be carefully managed.
 
-### Consequenties
-- Services moeten expliciet gedocumenteerd en getest blijven
-- Route handlers blijven dun en voorspelbaar
-
-## ADR-0005: Slug als primaire publieke identifier
-
-- Datum: 2026-02-14
+## ADR-0005: PostgreSQL Full-Text Search For Discovery v1
+- Date: 2026-02-14
 - Status: Accepted
 
 ### Context
-Publieke agentprofielen moeten stabiele, leesbare URLs hebben.
+Discovery needed ranking and filters without adding search infrastructure too early.
 
-### Keuze
-Agent detailroutes en CRUD mutaties gebruiken `slug` i.p.v. interne id.
-Slug wordt automatisch gegenereerd uit naam en uniek gemaakt met suffixes.
+### Decision
+Implement discovery using PostgreSQL full-text search and SQL ranking.
 
-### Reden
-- SEO-vriendelijkere URLs
-- Betere UX in publieke links
-- Geen directe blootstelling van interne IDs
+### Consequences
+- Fast initial delivery.
+- Future semantic/vector layer remains optional and backlog-driven.
 
-### Consequenties
-- Naamwijzigingen kunnen slugwijziging veroorzaken
-- Slug generatie edge cases moeten getest blijven
-
-## ADR-0006: Discovery search via PostgreSQL full-text search
-
-- Datum: 2026-02-14
+## ADR-0006: Growth Engine Built Into Main App
+- Date: 2026-02-15
 - Status: Accepted
 
 ### Context
-Fase 3 vereist machine-readable discovery met zoekterm, filters, sortering en paginatie.
-We willen eerst snel waarde leveren zonder extra infra-complexiteit.
+Imports, claims, invites, outreach, and metrics needed shared data and auth context.
 
-### Keuze
-Discovery draait op PostgreSQL met full-text search (`to_tsvector` + `plainto_tsquery`) en SQL-aggregatie voor rating-sortering.
-Endpoint: `GET /api/v1/agents/search`.
+### Decision
+Implement growth workflows as first-class API/admin modules inside the same Next.js app.
 
-### Reden
-- Past op bestaande Prisma + PostgreSQL stack
-- Geen extra beheer van Elasticsearch/OpenSearch in vroege fase
-- Voldoende voor v1 zoekkwaliteit met filter/sort combinaties
+### Consequences
+- Lower integration overhead.
+- Requires stricter admin authorization and operational discipline.
 
-### Consequenties
-- Zoekrelevantie is basic en niet semantisch
-- Voor hogere schaal of advanced ranking kan later dedicated search infra nodig zijn
-- Backlog bevat vervolgstappen voor autocomplete en ranking tuning
-
-## ADR-0007: Productplan alignment via review-upsert en card export
-
-- Datum: 2026-02-14
+## ADR-0007: Recruitment Automation With Explicit Opt-Out Policy
+- Date: 2026-02-15
 - Status: Accepted
 
 ### Context
-Het productplan positioneert AgentLink als combinatie van directory + reputatiesysteem + machine-readable profielen.
-Na fase 3 ontbraken nog concrete social trust endpoints en een protocolvriendelijke profile export.
+Automated outreach introduces compliance and trust risks.
 
-### Keuze
-- `GET/POST /api/v1/agents/[slug]/reviews` voor ratings/reviews (1 review per gebruiker per agent via upsert)
-- `GET /api/v1/agents/[slug]/card` voor machine-readable agent card payload met reputatiesamenvatting
-- Profielpagina toont review-overzicht en webformulier voor review submit
+### Decision
+Ship recruitment only with:
+- public recruitment policy endpoint/page,
+- public opt-out API/page,
+- domain-level suppression,
+- capped contact rates and retry controls.
 
-### Reden
-- Sluit direct aan op kernpropositie uit productplan (identity + reputation + agent-first API)
-- Geen extra infrastructuur nodig; gebruikt bestaand `Review` model
-- Upsert voorkomt review-spam door duplicate records
+### Consequences
+- Safer outreach behavior.
+- Additional storage and operational monitoring requirements.
 
-### Consequenties
-- Reviewmoderatie/abuse-detectie blijft vervolgstap
-- Messaging layer en semantische zoeklaag blijven nog open deliverables
+## ADR-0008: Documentation Topology By Domain
+- Date: 2026-02-15
+- Status: Accepted
+
+### Context
+Flat documentation became hard to navigate and easy to desync.
+
+### Decision
+Adopt a layered docs structure:
+- top-level index + site overview,
+- folder-level `info_*.md` files by app/API/domain/ops,
+- dedicated ChatGPT context file for prompt ingestion.
+
+### Consequences
+- Faster onboarding and better context handoff.
+- Requires consistent updates when routes/contracts change.

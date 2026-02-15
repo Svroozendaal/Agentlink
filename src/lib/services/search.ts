@@ -78,6 +78,7 @@ export interface AgentSearchResult {
 
 export interface DiscoveryFilterOptions {
   skills: string[];
+  tags: string[];
   protocols: string[];
   categories: string[];
   endpointTypes: string[];
@@ -114,6 +115,10 @@ export function buildSearchOrderBy(
   switch (normalizedSort) {
     case "rating":
       return Prisma.sql`"rating" DESC NULLS LAST, "reviewCount" DESC, a.updated_at DESC`;
+    case "reviews":
+      return Prisma.sql`"reviewCount" DESC, "rating" DESC NULLS LAST, a.updated_at DESC`;
+    case "endorsements":
+      return Prisma.sql`"endorsementCount" DESC, "reviewCount" DESC, a.updated_at DESC`;
     case "newest":
       return Prisma.sql`a.created_at DESC`;
     case "name":
@@ -166,14 +171,29 @@ export async function searchAgents(query: SearchAgentsQueryInput): Promise<Agent
   const whereClauses: Prisma.Sql[] = [Prisma.sql`a.is_published = TRUE`];
 
   if (query.q) {
+    const likePattern = `%${query.q}%`;
     whereClauses.push(
-      Prisma.sql`${searchVector} @@ plainto_tsquery('simple', ${query.q})`,
+      Prisma.sql`(
+        ${searchVector} @@ websearch_to_tsquery('simple', ${query.q})
+        OR a.name ILIKE ${likePattern}
+        OR a.description ILIKE ${likePattern}
+        OR COALESCE(a.long_description, '') ILIKE ${likePattern}
+        OR a.category ILIKE ${likePattern}
+        OR array_to_string(a.skills, ' ') ILIKE ${likePattern}
+        OR array_to_string(a.tags, ' ') ILIKE ${likePattern}
+      )`,
     );
   }
 
   if (query.skills && query.skills.length > 0) {
     whereClauses.push(
       Prisma.sql`a.skills && ARRAY[${Prisma.join(query.skills)}]::text[]`,
+    );
+  }
+
+  if (query.tags && query.tags.length > 0) {
+    whereClauses.push(
+      Prisma.sql`a.tags && ARRAY[${Prisma.join(query.tags)}]::text[]`,
     );
   }
 
@@ -189,6 +209,10 @@ export async function searchAgents(query: SearchAgentsQueryInput): Promise<Agent
 
   if (query.pricing) {
     whereClauses.push(Prisma.sql`a.pricing_model::text = ${query.pricing}`);
+  }
+
+  if (query.minRating !== undefined) {
+    whereClauses.push(Prisma.sql`a.review_count > 0 AND a.average_rating >= ${query.minRating}`);
   }
 
   if (query.verified !== undefined) {
@@ -216,7 +240,7 @@ export async function searchAgents(query: SearchAgentsQueryInput): Promise<Agent
 
   const whereSql = Prisma.join(whereClauses, " AND ");
   const relevanceSql = query.q
-    ? Prisma.sql`ts_rank(${searchVector}, plainto_tsquery('simple', ${query.q}))`
+    ? Prisma.sql`ts_rank(${searchVector}, websearch_to_tsquery('simple', ${query.q}))`
     : Prisma.sql`0`;
   const orderBySql = buildSearchOrderBy(query.sort, hasQuery);
 
@@ -272,12 +296,19 @@ export async function searchAgents(query: SearchAgentsQueryInput): Promise<Agent
 }
 
 export async function getDiscoveryFilterOptions(): Promise<DiscoveryFilterOptions> {
-  const [skillRows, protocolRows, categoryRows, endpointTypeRows] = await Promise.all([
+  const [skillRows, tagRows, protocolRows, categoryRows, endpointTypeRows] = await Promise.all([
     db.$queryRaw<ValueRow[]>(Prisma.sql`
       SELECT DISTINCT skill AS "value"
       FROM agent_profiles, UNNEST(skills) AS skill
       WHERE is_published = TRUE
       ORDER BY skill ASC
+      LIMIT 100
+    `),
+    db.$queryRaw<ValueRow[]>(Prisma.sql`
+      SELECT DISTINCT tag AS "value"
+      FROM agent_profiles, UNNEST(tags) AS tag
+      WHERE is_published = TRUE
+      ORDER BY tag ASC
       LIMIT 100
     `),
     db.$queryRaw<ValueRow[]>(Prisma.sql`
@@ -305,6 +336,7 @@ export async function getDiscoveryFilterOptions(): Promise<DiscoveryFilterOption
 
   return {
     skills: uniqueSorted(skillRows.map((row) => row.value)),
+    tags: uniqueSorted(tagRows.map((row) => row.value)),
     protocols: uniqueSorted(protocolRows.map((row) => row.value)),
     categories: uniqueSorted(categoryRows.map((row) => row.value)),
     endpointTypes: uniqueSorted(endpointTypeRows.map((row) => row.value)),

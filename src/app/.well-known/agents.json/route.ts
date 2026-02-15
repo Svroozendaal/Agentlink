@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 
 function getBaseUrl() {
-  return process.env.NEXTAUTH_URL ?? "https://agentlink.ai";
+  return process.env.NEXTAUTH_URL ?? "https://www.agent-l.ink";
 }
 
 export async function GET() {

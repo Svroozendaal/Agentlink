@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
+import { Role } from "@prisma/client";
 
 import { authOptions } from "@/lib/auth";
 import { getAgentBySlug } from "@/lib/services/agents";
@@ -42,10 +43,13 @@ export default async function EditAgentPage({ params }: EditAgentPageProps) {
           description: agent.description,
           longDescription: agent.longDescription ?? "",
           isPublished: agent.isPublished,
+          moderationStatus: agent.moderationStatus,
+          moderationNote: agent.moderationNote ?? "",
           acceptsMessages: agent.acceptsMessages,
           playgroundEnabled: agent.playgroundEnabled,
           connectEnabled: agent.connectEnabled,
         }}
+        canPublishImmediately={session.user.role === Role.ADMIN}
       />
 
       <EndpointManager slug={agent.slug} />

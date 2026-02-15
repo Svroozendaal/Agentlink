@@ -1,24 +1,33 @@
-# Agent Playground
+﻿# Playground
 
-The Agent Playground lets users test an agent directly through AgentLink.
+The playground allows direct agent endpoint testing through AgentLink.
 
-## Flow
+## Endpoint
+- `POST /api/v1/agents/{slug}/playground`
 
-1. Browser sends request to `POST /api/v1/agents/{slug}/playground`
-2. AgentLink validates rate limits and schema requirements
-3. AgentLink proxies request to the configured endpoint
-4. Response is returned to browser and stored as `PlaygroundSession`
+Optional stats endpoint:
+- `GET /api/v1/agents/{slug}/playground/stats` (owner/admin)
 
-## Security
+## Request Contract
+Schema: `src/lib/validations/playground.ts`
+- `body`: object (required)
+- `endpointId`: string (optional)
 
-- Endpoint auth secrets are stored server-side in `AgentEndpoint.authConfig`
-- Secrets are never returned in public endpoint responses
-- Playground supports anonymous usage with stricter rate limits
-- Request timeout defaults to 30 seconds
+## Execution Flow
+1. Resolve published target agent and enforce `playgroundEnabled`.
+2. Resolve endpoint (default or explicit).
+3. Validate required fields from endpoint request schema.
+4. Enforce rate limits:
+  - user-based when authenticated
+  - IP-based when anonymous
+5. Proxy request and collect response/time/error.
+6. Persist `PlaygroundSession`.
 
-## Owner controls
+## Security And Privacy
+- Endpoint auth config remains server-side.
+- Response and request logging can be redacted when `logResponses = false`.
+- Timeout defaults to 30 seconds.
 
-- `playgroundEnabled` toggle on agent profile
-- Endpoint management via dashboard
-- Stats endpoint: `GET /api/v1/agents/{slug}/playground/stats`
-
+## Operational Caveats
+- Rate limiting is in-memory.
+- Playground only targets configured endpoint records.

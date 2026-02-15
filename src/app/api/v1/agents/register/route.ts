@@ -24,7 +24,11 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const validatedBody = RegisterAgentSchema.parse(body);
 
-    const createdAgent = await registerAgentProfile(validatedBody, authContext.user.id);
+    const createdAgent = await registerAgentProfile(
+      validatedBody,
+      authContext.user.id,
+      authContext.user.role,
+    );
 
     return NextResponse.json(
       {

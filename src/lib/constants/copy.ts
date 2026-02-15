@@ -43,6 +43,7 @@ export const COPY = {
     privacy: "Privacy",
     terms: "Terms",
     openapi: "OpenAPI",
+    optOut: "Opt out",
+    recruitmentPolicy: "Recruitment policy",
   },
 } as const;
-

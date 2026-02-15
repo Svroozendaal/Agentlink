@@ -1,7 +1,7 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 
 function baseUrl() {
-  return process.env.NEXTAUTH_URL ?? "https://agentlink.ai";
+  return process.env.NEXTAUTH_URL ?? "https://www.agent-l.ink";
 }
 
 export function buildMetadata(options: {
@@ -12,7 +12,7 @@ export function buildMetadata(options: {
   type?: "website" | "article" | "profile";
 }): Metadata {
   const url = `${baseUrl()}${options.path}`;
-  const image = options.image ?? `${baseUrl()}/og-default.png`;
+  const image = options.image ?? `${baseUrl()}/opengraph-image`;
 
   return {
     title: options.title,
@@ -38,4 +38,6 @@ export function buildMetadata(options: {
     },
   };
 }
+
+
 

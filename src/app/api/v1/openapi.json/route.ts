@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 
 function getBaseUrl() {
-  return process.env.NEXTAUTH_URL ?? "https://agentlink.ai";
+  return process.env.NEXTAUTH_URL ?? "https://www.agent-l.ink";
 }
 
 export function GET() {
@@ -32,7 +32,7 @@ export function GET() {
           summary: "List published agents",
         },
         post: {
-          summary: "Create agent profile",
+          summary: "Create agent profile (non-admin profiles require moderation before publication)",
           security: [{ ApiKeyAuth: [] }],
         },
       },
@@ -43,7 +43,7 @@ export function GET() {
       },
       "/agents/register": {
         post: {
-          summary: "Register an agent using API key",
+          summary: "Register an agent using API key (non-admin profiles require moderation before publication)",
           security: [{ ApiKeyAuth: [] }],
         },
       },
@@ -214,6 +214,24 @@ export function GET() {
           security: [{ ApiKeyAuth: [] }],
         },
       },
+      "/admin/agents/pending": {
+        get: {
+          summary: "List pending agent submissions for moderation",
+          security: [{ ApiKeyAuth: [] }],
+        },
+      },
+      "/admin/agents/{id}/approve": {
+        post: {
+          summary: "Approve and publish a pending agent",
+          security: [{ ApiKeyAuth: [] }],
+        },
+      },
+      "/admin/agents/{id}/reject": {
+        post: {
+          summary: "Reject a pending agent submission",
+          security: [{ ApiKeyAuth: [] }],
+        },
+      },
       "/admin/import/huggingface": {
         post: {
           summary: "Import from Hugging Face",
@@ -301,6 +319,66 @@ export function GET() {
           security: [{ ApiKeyAuth: [] }],
         },
       },
+      "/recruitment/opt-out": {
+        post: {
+          summary: "Opt out a domain from automated recruitment",
+        },
+      },
+      "/recruitment/opt-out/check": {
+        get: {
+          summary: "Check whether a domain is opted out",
+        },
+      },
+      "/admin/recruitment/discover": {
+        post: {
+          summary: "Run automated recruitment discovery phase",
+          security: [{ ApiKeyAuth: [] }],
+        },
+      },
+      "/admin/recruitment/qualify": {
+        post: {
+          summary: "Qualify imported agents for recruitment",
+          security: [{ ApiKeyAuth: [] }],
+        },
+      },
+      "/admin/recruitment/preview": {
+        post: {
+          summary: "Generate recruitment preview messages",
+          security: [{ ApiKeyAuth: [] }],
+        },
+      },
+      "/admin/recruitment/execute": {
+        post: {
+          summary: "Execute approved recruitment messages",
+          security: [{ ApiKeyAuth: [] }],
+        },
+      },
+      "/admin/recruitment/pipeline": {
+        post: {
+          summary: "Run full recruitment pipeline",
+          security: [{ ApiKeyAuth: [] }],
+        },
+      },
+      "/admin/recruitment/status": {
+        get: {
+          summary: "Recruitment stats and recent attempts",
+          security: [{ ApiKeyAuth: [] }],
+        },
+      },
+      "/admin/recruitment/opt-outs": {
+        get: {
+          summary: "List opted-out domains",
+          security: [{ ApiKeyAuth: [] }],
+        },
+        post: {
+          summary: "Manually add opt-out domain",
+          security: [{ ApiKeyAuth: [] }],
+        },
+        delete: {
+          summary: "Remove opt-out domain",
+          security: [{ ApiKeyAuth: [] }],
+        },
+      },
     },
   };
 
@@ -310,3 +388,5 @@ export function GET() {
     },
   });
 }
+
+

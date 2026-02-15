@@ -1,4 +1,4 @@
-import { Prisma, PricingModel } from "@prisma/client";
+import { AgentModerationStatus, Prisma, PricingModel, Role } from "@prisma/client";
 
 import { db } from "@/lib/db";
 import { createActivityEvent } from "@/lib/services/activity";
@@ -21,6 +21,7 @@ const AGENT_SUMMARY_SELECT = {
   protocols: true,
   pricingModel: true,
   isPublished: true,
+  moderationStatus: true,
   isVerified: true,
   averageRating: true,
   reviewCount: true,
@@ -43,6 +44,9 @@ const AGENT_DETAIL_SELECT = {
   pricingDetails: true,
   bannerUrl: true,
   metadata: true,
+  moderationNote: true,
+  moderatedAt: true,
+  moderatedById: true,
   ownerId: true,
   owner: {
     select: {
@@ -58,6 +62,9 @@ const OWNED_AGENT_SELECT = {
   slug: true,
   name: true,
   isPublished: true,
+  moderationStatus: true,
+  moderationNote: true,
+  moderatedAt: true,
   averageRating: true,
   reviewCount: true,
   endorsementCount: true,
@@ -84,6 +91,23 @@ export interface AgentListResult {
     totalPages: number;
   };
 }
+
+interface CreateAgentOptions {
+  autoApprove?: boolean;
+  moderatedById?: string;
+}
+
+const MODERATION_AGENT_SELECT = {
+  ...AGENT_DETAIL_SELECT,
+  owner: {
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      image: true,
+    },
+  },
+} satisfies Prisma.AgentProfileSelect;
 
 export class AgentServiceError extends Error {
   status: number;
@@ -127,7 +151,14 @@ function mapCreateData(
   ownerId: string,
   slug: string,
   isEarlyAdopter: boolean,
+  ownerRole: Role,
+  options?: CreateAgentOptions,
 ): Prisma.AgentProfileCreateInput {
+  const isAutoApproved = options?.autoApprove === true;
+  const isAdmin = ownerRole === Role.ADMIN;
+  const shouldAutoApprove = isAutoApproved || isAdmin;
+  const moderationActorId = options?.moderatedById ?? ownerId;
+
   return {
     slug,
     name: input.name,
@@ -147,7 +178,17 @@ function mapCreateData(
     websiteUrl: input.websiteUrl,
     pricingModel: input.pricingModel ?? PricingModel.FREE,
     pricingDetails: input.pricingDetails,
-    isPublished: input.isPublished ?? false,
+    isPublished: shouldAutoApprove
+      ? true
+      : isAdmin
+        ? (input.isPublished ?? false)
+        : false,
+    moderationStatus: shouldAutoApprove
+      ? AgentModerationStatus.APPROVED
+      : AgentModerationStatus.PENDING,
+    moderationNote: null,
+    moderatedAt: shouldAutoApprove ? new Date() : null,
+    moderatedById: shouldAutoApprove ? moderationActorId : null,
     acceptsMessages: input.acceptsMessages ?? true,
     playgroundEnabled: input.playgroundEnabled ?? false,
     connectEnabled: input.connectEnabled ?? false,
@@ -161,13 +202,15 @@ function mapCreateData(
 export async function createAgentProfile(
   input: CreateAgentInput,
   ownerId: string,
+  ownerRole: Role = Role.USER,
+  options?: CreateAgentOptions,
 ): Promise<AgentDetail> {
   const slug = await generateUniqueSlug(input.name);
   const totalAgents = await db.agentProfile.count();
   const isEarlyAdopter = totalAgents < 500;
 
   const created = await db.agentProfile.create({
-    data: mapCreateData(input, ownerId, slug, isEarlyAdopter),
+    data: mapCreateData(input, ownerId, slug, isEarlyAdopter, ownerRole, options),
     select: AGENT_DETAIL_SELECT,
   });
 
@@ -175,6 +218,7 @@ export async function createAgentProfile(
     type: "AGENT_CREATED",
     actorId: ownerId,
     targetAgentId: created.id,
+    isPublic: created.isPublished,
     metadata: {
       slug: created.slug,
       source: "web",
@@ -187,18 +231,20 @@ export async function createAgentProfile(
 export async function registerAgentProfile(
   input: RegisterAgentInput,
   ownerId: string,
+  ownerRole: Role = Role.USER,
 ): Promise<AgentDetail> {
   const normalizedInput: CreateAgentInput = {
     ...input,
     isPublished: input.isPublished ?? false,
   };
 
-  const created = await createAgentProfile(normalizedInput, ownerId);
+  const created = await createAgentProfile(normalizedInput, ownerId, ownerRole);
 
   await createActivityEvent({
     type: "AGENT_REGISTERED_VIA_API",
     actorId: ownerId,
     targetAgentId: created.id,
+    isPublic: created.isPublished,
     metadata: {
       slug: created.slug,
       source: "api",
@@ -261,8 +307,18 @@ export async function listAgents(query: ListAgentsQueryInput): Promise<AgentList
 export async function getAgentBySlug(
   slug: string,
   viewerUserId?: string,
+  viewerRole: Role = Role.USER,
 ): Promise<AgentDetail | null> {
   if (viewerUserId) {
+    if (viewerRole === Role.ADMIN) {
+      return db.agentProfile.findFirst({
+        where: {
+          slug,
+        },
+        select: AGENT_DETAIL_SELECT,
+      });
+    }
+
     return db.agentProfile.findFirst({
       where: {
         slug,
@@ -293,10 +349,18 @@ export async function updateAgentBySlug(
   slug: string,
   ownerId: string,
   input: UpdateAgentInput,
+  actingRole: Role = Role.USER,
 ): Promise<AgentDetail> {
   const existing = await db.agentProfile.findUnique({
     where: { slug },
-    select: { id: true, ownerId: true, name: true, slug: true, isPublished: true },
+    select: {
+      id: true,
+      ownerId: true,
+      name: true,
+      slug: true,
+      isPublished: true,
+      moderationStatus: true,
+    },
   });
 
   if (!existing) {
@@ -312,38 +376,64 @@ export async function updateAgentBySlug(
       ? await generateUniqueSlug(input.name, existing.id)
       : existing.slug;
 
+  const updateData: Prisma.AgentProfileUpdateInput = {
+    ...(input.name ? { name: input.name } : {}),
+    ...(input.description ? { description: input.description } : {}),
+    ...(input.longDescription !== undefined ? { longDescription: input.longDescription } : {}),
+    ...(input.skills ? { skills: uniqueArray(input.skills) } : {}),
+    ...(input.tags ? { tags: uniqueArray(input.tags) } : {}),
+    ...(input.category ? { category: input.category } : {}),
+    ...(input.protocols ? { protocols: uniqueArray(input.protocols) } : {}),
+    ...(input.endpointUrl !== undefined ? { endpointUrl: input.endpointUrl } : {}),
+    ...(input.documentationUrl !== undefined
+      ? { documentationUrl: input.documentationUrl }
+      : {}),
+    ...(input.websiteUrl !== undefined ? { websiteUrl: input.websiteUrl } : {}),
+    ...(input.pricingModel ? { pricingModel: input.pricingModel } : {}),
+    ...(input.pricingDetails !== undefined ? { pricingDetails: input.pricingDetails } : {}),
+    ...(input.acceptsMessages !== undefined
+      ? { acceptsMessages: input.acceptsMessages }
+      : {}),
+    ...(input.playgroundEnabled !== undefined
+      ? { playgroundEnabled: input.playgroundEnabled }
+      : {}),
+    ...(input.connectEnabled !== undefined ? { connectEnabled: input.connectEnabled } : {}),
+    ...(input.logoUrl !== undefined ? { logoUrl: input.logoUrl } : {}),
+    ...(input.bannerUrl !== undefined ? { bannerUrl: input.bannerUrl } : {}),
+    ...(input.metadata !== undefined
+      ? { metadata: input.metadata as Prisma.InputJsonValue }
+      : {}),
+    slug: nextSlug,
+  };
+
+  const isAdmin = actingRole === Role.ADMIN;
+  if (isAdmin) {
+    if (input.isPublished !== undefined) {
+      updateData.isPublished = input.isPublished;
+      if (input.isPublished) {
+        updateData.moderationStatus = AgentModerationStatus.APPROVED;
+        updateData.moderationNote = null;
+        updateData.moderatedAt = new Date();
+        updateData.moderatedById = ownerId;
+      }
+    }
+  } else if (existing.moderationStatus === AgentModerationStatus.APPROVED) {
+    if (input.isPublished !== undefined) {
+      updateData.isPublished = input.isPublished;
+    }
+  } else if (input.isPublished === true) {
+    updateData.isPublished = false;
+    updateData.moderationStatus = AgentModerationStatus.PENDING;
+    updateData.moderationNote = null;
+    updateData.moderatedAt = null;
+    updateData.moderatedById = null;
+  } else {
+    updateData.isPublished = false;
+  }
+
   const updated = await db.agentProfile.update({
     where: { id: existing.id },
-    data: {
-      ...(input.name ? { name: input.name } : {}),
-      ...(input.description ? { description: input.description } : {}),
-      ...(input.longDescription !== undefined ? { longDescription: input.longDescription } : {}),
-      ...(input.skills ? { skills: uniqueArray(input.skills) } : {}),
-      ...(input.tags ? { tags: uniqueArray(input.tags) } : {}),
-      ...(input.category ? { category: input.category } : {}),
-      ...(input.protocols ? { protocols: uniqueArray(input.protocols) } : {}),
-      ...(input.endpointUrl !== undefined ? { endpointUrl: input.endpointUrl } : {}),
-      ...(input.documentationUrl !== undefined
-        ? { documentationUrl: input.documentationUrl }
-        : {}),
-      ...(input.websiteUrl !== undefined ? { websiteUrl: input.websiteUrl } : {}),
-      ...(input.pricingModel ? { pricingModel: input.pricingModel } : {}),
-      ...(input.pricingDetails !== undefined ? { pricingDetails: input.pricingDetails } : {}),
-      ...(input.isPublished !== undefined ? { isPublished: input.isPublished } : {}),
-      ...(input.acceptsMessages !== undefined
-        ? { acceptsMessages: input.acceptsMessages }
-        : {}),
-      ...(input.playgroundEnabled !== undefined
-        ? { playgroundEnabled: input.playgroundEnabled }
-        : {}),
-      ...(input.connectEnabled !== undefined ? { connectEnabled: input.connectEnabled } : {}),
-      ...(input.logoUrl !== undefined ? { logoUrl: input.logoUrl } : {}),
-      ...(input.bannerUrl !== undefined ? { bannerUrl: input.bannerUrl } : {}),
-      ...(input.metadata !== undefined
-        ? { metadata: input.metadata as Prisma.InputJsonValue }
-        : {}),
-      slug: nextSlug,
-    },
+    data: updateData,
     select: AGENT_DETAIL_SELECT,
   });
 
@@ -351,6 +441,7 @@ export async function updateAgentBySlug(
     type: "AGENT_UPDATED",
     actorId: ownerId,
     targetAgentId: updated.id,
+    isPublic: updated.isPublished,
     metadata: {
       slug: updated.slug,
     },
@@ -366,6 +457,110 @@ export async function updateAgentBySlug(
       },
     });
   }
+
+  return updated;
+}
+
+export type ModerationAgent = Prisma.AgentProfileGetPayload<{
+  select: typeof MODERATION_AGENT_SELECT;
+}>;
+
+export async function listPendingAgentProfiles(limit = 100): Promise<ModerationAgent[]> {
+  const safeLimit = Math.max(1, Math.min(limit, 200));
+
+  return db.agentProfile.findMany({
+    where: {
+      moderationStatus: AgentModerationStatus.PENDING,
+      isPublished: false,
+    },
+    orderBy: { createdAt: "asc" },
+    take: safeLimit,
+    select: MODERATION_AGENT_SELECT,
+  });
+}
+
+export async function approveAgentProfile(
+  agentId: string,
+  adminUserId: string,
+): Promise<AgentDetail> {
+  const existing = await db.agentProfile.findUnique({
+    where: { id: agentId },
+    select: { id: true, slug: true, moderationStatus: true, isPublished: true },
+  });
+
+  if (!existing) {
+    throw new AgentServiceError(404, "NOT_FOUND", "Agent not found");
+  }
+
+  if (existing.moderationStatus === AgentModerationStatus.APPROVED && existing.isPublished) {
+    return db.agentProfile.findUniqueOrThrow({
+      where: { id: agentId },
+      select: AGENT_DETAIL_SELECT,
+    });
+  }
+
+  const updated = await db.agentProfile.update({
+    where: { id: agentId },
+    data: {
+      isPublished: true,
+      moderationStatus: AgentModerationStatus.APPROVED,
+      moderationNote: null,
+      moderatedAt: new Date(),
+      moderatedById: adminUserId,
+    },
+    select: AGENT_DETAIL_SELECT,
+  });
+
+  await createActivityEvent({
+    type: "AGENT_PUBLISHED",
+    actorId: adminUserId,
+    targetAgentId: updated.id,
+    metadata: {
+      slug: updated.slug,
+      source: "admin_moderation",
+    },
+  });
+
+  return updated;
+}
+
+export async function rejectAgentProfile(
+  agentId: string,
+  adminUserId: string,
+  note?: string,
+): Promise<AgentDetail> {
+  const existing = await db.agentProfile.findUnique({
+    where: { id: agentId },
+    select: { id: true },
+  });
+
+  if (!existing) {
+    throw new AgentServiceError(404, "NOT_FOUND", "Agent not found");
+  }
+
+  const updated = await db.agentProfile.update({
+    where: { id: agentId },
+    data: {
+      isPublished: false,
+      moderationStatus: AgentModerationStatus.REJECTED,
+      moderationNote: note?.trim() ? note.trim() : null,
+      moderatedAt: new Date(),
+      moderatedById: adminUserId,
+    },
+    select: AGENT_DETAIL_SELECT,
+  });
+
+  await createActivityEvent({
+    type: "AGENT_UPDATED",
+    actorId: adminUserId,
+    targetAgentId: updated.id,
+    isPublic: false,
+    metadata: {
+      slug: updated.slug,
+      action: "moderation_rejected",
+      note: note?.trim() ? note.trim() : null,
+    },
+  });
 
   return updated;
 }
@@ -397,6 +592,7 @@ export async function unpublishAgentBySlug(
     type: "AGENT_UPDATED",
     actorId: ownerId,
     targetAgentId: updated.id,
+    isPublic: false,
     metadata: {
       slug: updated.slug,
       action: "unpublish",

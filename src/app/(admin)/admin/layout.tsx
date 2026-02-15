@@ -12,7 +12,9 @@ interface AdminLayoutProps {
 }
 
 const links = [
+  { href: "/admin/moderation", label: "Moderation" },
   { href: "/admin/growth", label: "Growth" },
+  { href: "/admin/recruitment", label: "Recruitment" },
   { href: "/admin/imports", label: "Imports" },
   { href: "/admin/invites", label: "Invites" },
   { href: "/admin/outreach", label: "Outreach" },

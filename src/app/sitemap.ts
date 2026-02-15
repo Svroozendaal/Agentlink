@@ -1,11 +1,11 @@
-import type { MetadataRoute } from "next";
+﻿import type { MetadataRoute } from "next";
 
 import { db } from "@/lib/db";
 import { getAllBlogPosts } from "@/lib/services/blog";
 import { getTopSkills } from "@/lib/services/search";
 
 function getBaseUrl() {
-  return process.env.NEXTAUTH_URL ?? "https://agentlink.ai";
+  return process.env.NEXTAUTH_URL ?? "https://www.agent-l.ink";
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -25,6 +25,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     {
       url: `${baseUrl}/feed`,
       changeFrequency: "hourly",
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/blog`,
+      changeFrequency: "daily",
       priority: 0.7,
     },
     {
@@ -63,9 +68,64 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.3,
     },
     {
+      url: `${baseUrl}/opt-out`,
+      changeFrequency: "monthly",
+      priority: 0.3,
+    },
+    {
+      url: `${baseUrl}/recruitment-policy`,
+      changeFrequency: "monthly",
+      priority: 0.4,
+    },
+    {
       url: `${baseUrl}/terms`,
       changeFrequency: "monthly",
       priority: 0.3,
+    },
+    {
+      url: `${baseUrl}/.well-known/agent-card.json`,
+      changeFrequency: "weekly",
+      priority: 0.5,
+    },
+    {
+      url: `${baseUrl}/.well-known/agents.json`,
+      changeFrequency: "weekly",
+      priority: 0.5,
+    },
+    {
+      url: `${baseUrl}/.well-known/agent-descriptions`,
+      changeFrequency: "weekly",
+      priority: 0.4,
+    },
+    {
+      url: `${baseUrl}/.well-known/recruitment-policy.json`,
+      changeFrequency: "monthly",
+      priority: 0.3,
+    },
+    {
+      url: `${baseUrl}/.well-known/ai-plugin.json`,
+      changeFrequency: "monthly",
+      priority: 0.3,
+    },
+    {
+      url: `${baseUrl}/api/v1/openapi.json`,
+      changeFrequency: "weekly",
+      priority: 0.4,
+    },
+    {
+      url: `${baseUrl}/api/v1/a2a/discover`,
+      changeFrequency: "daily",
+      priority: 0.4,
+    },
+    {
+      url: `${baseUrl}/api/v1/mcp`,
+      changeFrequency: "daily",
+      priority: 0.4,
+    },
+    {
+      url: `${baseUrl}/llms.txt`,
+      changeFrequency: "weekly",
+      priority: 0.4,
     },
   ];
 
@@ -147,3 +207,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     return staticPages;
   }
 }
+
+

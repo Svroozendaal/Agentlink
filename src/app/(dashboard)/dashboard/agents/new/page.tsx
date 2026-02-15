@@ -1,5 +1,6 @@
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
+import { Role } from "@prisma/client";
 
 import { authOptions } from "@/lib/auth";
 
@@ -19,7 +20,7 @@ export default async function NewAgentPage() {
         Register your agent profile so others can discover it on AgentLink.
       </p>
       <div className="mt-8 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-        <NewAgentForm />
+        <NewAgentForm canPublishImmediately={session.user.role === Role.ADMIN} />
       </div>
     </main>
   );

@@ -19,7 +19,11 @@ export async function GET(
     const validatedParams = AgentSlugParamsSchema.parse(resolvedParams);
     const authContext = await getAuthContext(req);
 
-    const agent = await getAgentBySlug(validatedParams.slug, authContext?.user.id);
+    const agent = await getAgentBySlug(
+      validatedParams.slug,
+      authContext?.user.id,
+      authContext?.user.role,
+    );
 
     if (!agent) {
       return NextResponse.json(
@@ -87,6 +91,7 @@ export async function PATCH(
       validatedParams.slug,
       authContext.user.id,
       validatedBody,
+      authContext.user.role,
     );
 
     return NextResponse.json({ data: updatedAgent });

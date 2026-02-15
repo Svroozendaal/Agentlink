@@ -5,18 +5,21 @@ interface AgentFiltersProps {
   query: {
     q?: string;
     skills?: string[];
+    tags?: string[];
     protocols?: string[];
     endpointTypes?: string[];
     category?: string;
     pricing?: PricingModel;
+    minRating?: number;
     verified?: boolean;
     playground?: boolean;
     connect?: boolean;
-    sort: "relevance" | "rating" | "newest" | "name";
+    sort: "relevance" | "rating" | "reviews" | "endorsements" | "newest" | "name";
     limit: number;
   };
   options: {
     skills: string[];
+    tags: string[];
     protocols: string[];
     categories: string[];
     endpointTypes: string[];
@@ -26,6 +29,8 @@ interface AgentFiltersProps {
 const SORT_OPTIONS = [
   { value: "relevance", label: "Relevance" },
   { value: "rating", label: "Highest rated" },
+  { value: "reviews", label: "Most reviewed" },
+  { value: "endorsements", label: "Most endorsed" },
   { value: "newest", label: "Newest" },
   { value: "name", label: "Name (A-Z)" },
 ] as const;
@@ -133,6 +138,27 @@ function FilterForm({
         </select>
       </div>
 
+      <div>
+        <label
+          htmlFor={`${idPrefix}-min-rating`}
+          className="mb-2 block text-sm font-semibold text-zinc-800"
+        >
+          Minimum rating
+        </label>
+        <select
+          id={`${idPrefix}-min-rating`}
+          name="minRating"
+          defaultValue={query.minRating ? String(query.minRating) : ""}
+          className="h-10 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm"
+        >
+          <option value="">Any rating</option>
+          <option value="4">4+ stars</option>
+          <option value="3">3+ stars</option>
+          <option value="2">2+ stars</option>
+          <option value="1">1+ stars</option>
+        </select>
+      </div>
+
       <fieldset>
         <legend className="text-sm font-semibold text-zinc-800">Quality</legend>
         <label className="mt-2 flex items-center gap-2 text-sm text-zinc-700">
@@ -187,6 +213,28 @@ function FilterForm({
                   className="h-4 w-4 rounded border-zinc-300"
                 />
                 {skill}
+              </label>
+            ))
+          )}
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend className="text-sm font-semibold text-zinc-800">Tags</legend>
+        <div className="mt-2 max-h-44 space-y-2 overflow-y-auto pr-2">
+          {options.tags.length === 0 ? (
+            <p className="text-sm text-zinc-500">No tag filters available yet.</p>
+          ) : (
+            options.tags.map((tag) => (
+              <label key={tag} className="flex items-center gap-2 text-sm text-zinc-700">
+                <input
+                  type="checkbox"
+                  name="tags"
+                  value={tag}
+                  defaultChecked={query.tags?.includes(tag)}
+                  className="h-4 w-4 rounded border-zinc-300"
+                />
+                {tag}
               </label>
             ))
           )}

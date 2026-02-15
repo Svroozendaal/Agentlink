@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 function getBaseUrl() {
-  return process.env.NEXTAUTH_URL ?? "https://agentlink.ai";
+  return process.env.NEXTAUTH_URL ?? "https://www.agent-l.ink";
 }
 
 export function GET() {
@@ -24,4 +24,3 @@ export function GET() {
     },
   });
 }
-

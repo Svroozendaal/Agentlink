@@ -1,74 +1,52 @@
-# 🏗️ Agent: Architect
+﻿# Agent: Architect
 
-> Verantwoordelijk voor projectstructuur, mapindeling, dependencies en technische beslissingen.
+Responsible for project structure, module boundaries, dependency decisions, and technical consistency.
 
----
+## Role And Responsibilities
+Use this agent when:
+- introducing new folders, modules, or architectural boundaries,
+- adding/removing dependencies,
+- deciding where new logic should live,
+- refactoring structure for maintainability.
 
-## Rol & Verantwoordelijkheden
-
-De Architect agent wordt geactiveerd wanneer:
-- Er een nieuwe map, module of package structuur nodig is
-- Er een dependency toegevoegd, geüpdatet of verwijderd moet worden
-- Er een technische architectuurbeslissing genomen moet worden
-- Er een nieuw bestand aangemaakt wordt dat niet in een bestaande map past
-- De projectstructuur herzien of gerefactord moet worden
-
-## Regels
-
-### Structuur
-1. **Volg de mapstructuur uit CLAUDE.md** — Wijk hier NOOIT van af zonder toestemming
-2. **Eén verantwoordelijkheid per map** — Als een map twee dingen doet, splits hem
-3. **Maximaal 3 niveaus diep** — Diepere nesting is een code smell
-4. **Index bestanden voor re-exports** — Gebruik `index.ts` voor publieke exports uit een map
+## Rules
+### Structure
+1. Preserve the current Next.js + `src/` + Prisma architecture unless a deliberate redesign is approved.
+2. Keep one primary responsibility per folder.
+3. Prefer shallow, readable folder layouts over deep nesting.
+4. Update relevant docs when structure changes (`docs/*`, `info_*.md`).
 
 ### Dependencies
-1. **Minimaliseer dependencies** — Elke dependency is een risico. Vraag: kan ik dit zelf in <50 regels?
-2. **Geen overlappende dependencies** — Kies één library per functionaliteit
-3. **Pin exact versions** in package.json voor productie-critical packages
-4. **Check bundle size** — Gebruik `bundlephobia.com` logica: als een package >100KB is, overweeg alternatieven
-5. **Documenteer elke dependency** — Voeg toe aan `docs/decisions.md` met reden
+1. Add dependencies only when existing stack cannot reasonably solve the problem.
+2. Avoid overlapping libraries that solve the same concern.
+3. Record significant dependency choices in `docs/decisions.md`.
+4. Prefer stable, maintained, production-grade packages.
 
-### Tech Decisions
-1. **Documenteer in `docs/decisions.md`** met dit format:
-   ```markdown
-   ## [DATUM] Beslissing: [Titel]
-   **Context:** Waarom moesten we kiezen?
-   **Opties:** Welke opties zijn overwogen?
-   **Beslissing:** Wat is gekozen en waarom?
-   **Consequenties:** Wat zijn de gevolgen?
-   ```
-2. **Vraag de gebruiker** bij beslissingen met significante impact
+### Architectural Decisions
+1. Document meaningful decisions as ADR entries in `docs/decisions.md`.
+2. Surface tradeoffs clearly (impact, cost, migration risk).
+3. Avoid hidden architectural shifts.
 
-## Patronen
+## Patterns
+### Add a new module
+1. Place module under the right domain folder.
+2. Keep route handlers thin and delegate logic to `src/lib/services/*` (or domain-specific modules).
+3. Add/update documentation pointers in `docs/site-overview.md` and relevant `info_*.md` files.
 
-### Nieuwe module toevoegen
-```
-1. Maak de map aan op de juiste plek in de structuur
-2. Maak een info_[naam].md aan
-3. Maak een index.ts aan voor exports
-4. Update de parent info_*.md om de nieuwe module te vermelden
-5. Als er types nodig zijn, definieer ze in src/types/
-```
+### Add a dependency
+1. Evaluate necessity and alternatives.
+2. Add package.
+3. Integrate minimally.
+4. Document why in ADRs if the choice is non-trivial.
 
-### Dependency toevoegen
-```
-1. Controleer of het echt nodig is (kan het zonder?)
-2. Check alternatieven (kleiner, beter onderhouden?)
-3. Installeer met exact version
-4. Voeg toe aan docs/decisions.md
-5. Update relevante info_*.md
-```
+## Quality Check
+- [ ] Does the change fit existing architecture boundaries?
+- [ ] Are service/domain boundaries clearer, not blurrier?
+- [ ] Are docs updated for structural changes?
+- [ ] Are new dependencies justified?
 
-## Kwaliteitscheck
-Na elke taak:
-- [ ] Past de wijziging in de bestaande structuur?
-- [ ] Zijn alle info_*.md bestanden bijgewerkt?
-- [ ] Is er een ADR geschreven voor significante keuzes?
-- [ ] Zijn er geen circulaire dependencies ontstaan?
-- [ ] Is de mapstructuur nog steeds max 3 niveaus diep?
-
-## Zelfverbetering
-Na elke taak, evalueer:
-- Zijn er mappen die te groot worden (>10 bestanden)? → Overweeg opsplitsing
-- Zijn er mappen die te klein zijn (1 bestand)? → Overweeg samenvoegen
-- Zijn er patronen die niet in dit document staan maar wel herhaald worden? → Voeg ze toe (na toestemming)
+## Self-Improvement
+After each task, identify:
+- repeated structural pain points,
+- places where boundaries are too coupled,
+- opportunities to simplify module ownership.

@@ -21,6 +21,12 @@ enum PricingModel {
   ENTERPRISE
 }
 
+enum AgentModerationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 enum ReviewStatus {
   PUBLISHED
   HIDDEN
@@ -104,6 +110,28 @@ enum OutreachStatus {
   RESPONDED
   REGISTERED
   DECLINED
+}
+
+enum ContactMethod {
+  REST_ENDPOINT
+  A2A_PROTOCOL
+  MCP_INTERACTION
+  WELL_KNOWN_CHECK
+  GITHUB_ISSUE
+  GITHUB_PR
+  WEBHOOK_PING
+  EMAIL_API
+}
+
+enum RecruitmentStatus {
+  PENDING
+  SENT
+  DELIVERED
+  INTERESTED
+  REGISTERED
+  DECLINED
+  FAILED
+  OPTED_OUT
 }
 
 model User {
@@ -203,6 +231,10 @@ model AgentProfile {
   pricingModel     PricingModel @default(FREE) @map("pricing_model")
   pricingDetails   String?      @map("pricing_details")
   isPublished      Boolean      @default(false) @map("is_published")
+  moderationStatus AgentModerationStatus @default(APPROVED) @map("moderation_status")
+  moderationNote   String?      @map("moderation_note")
+  moderatedAt      DateTime?    @map("moderated_at")
+  moderatedById    String?      @map("moderated_by_id")
   isVerified       Boolean      @default(false) @map("is_verified")
   averageRating    Float        @default(0) @map("average_rating")
   reviewCount      Int          @default(0) @map("review_count")
@@ -236,6 +268,7 @@ model AgentProfile {
   @@index([ownerId])
   @@index([skills], type: Gin)
   @@index([isPublished])
+  @@index([moderationStatus])
   @@map("agent_profiles")
 }
 
@@ -456,6 +489,7 @@ model ImportedAgent {
   updatedAt       DateTime     @updatedAt @map("updated_at")
   claimedByUser   User?        @relation("ImportedAgentClaimedBy", fields: [claimedByUserId], references: [id], onDelete: SetNull)
   agentProfile    AgentProfile? @relation("ImportedAgentProfile", fields: [agentProfileId], references: [id], onDelete: SetNull)
+  recruitmentAttempts RecruitmentAttempt[]
 
   @@index([sourcePlatform, status])
   @@index([status])
@@ -520,6 +554,44 @@ model GrowthMetric {
 
   @@unique([date])
   @@map("growth_metrics")
+}
+
+model RecruitmentAttempt {
+  id              String            @id @default(cuid())
+  importedAgentId String?           @map("imported_agent_id")
+  targetName      String            @map("target_name")
+  targetUrl       String            @map("target_url")
+  contactUrl      String            @map("contact_url")
+  contactMethod   ContactMethod     @map("contact_method")
+  requestPayload  Json              @map("request_payload")
+  responsePayload Json?             @map("response_payload")
+  responseStatus  Int?              @map("response_status")
+  status          RecruitmentStatus @default(PENDING)
+  errorMessage    String?           @map("error_message")
+  inviteToken     String?           @map("invite_token")
+  campaign        String            @default("auto")
+  attemptNumber   Int               @default(1) @map("attempt_number")
+  nextRetryAt     DateTime?         @map("next_retry_at")
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+  importedAgent   ImportedAgent?    @relation(fields: [importedAgentId], references: [id], onDelete: SetNull)
+
+  @@unique([targetUrl, contactMethod])
+  @@index([status])
+  @@index([contactMethod, status])
+  @@index([campaign])
+  @@index([nextRetryAt])
+  @@map("recruitment_attempts")
+}
+
+model RecruitmentOptOut {
+  id        String   @id @default(cuid())
+  domain    String   @unique
+  reason    String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([domain])
+  @@map("recruitment_opt_outs")
 }
 
 model VerificationToken {

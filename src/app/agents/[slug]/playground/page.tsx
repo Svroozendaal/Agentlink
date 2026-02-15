@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Role } from "@prisma/client";
 
 import { authOptions } from "@/lib/auth";
 import { getAgentBySlug } from "@/lib/services/agents";
@@ -29,8 +30,9 @@ export default async function AgentPlaygroundPage({ params }: PlaygroundPageProp
   const { slug } = await params;
   const session = await getServerSession(authOptions);
   const viewerUserId = session?.user?.id;
+  const viewerRole = session?.user?.role ?? Role.USER;
   const [agent, endpointList] = await Promise.all([
-    getAgentBySlug(slug, viewerUserId),
+    getAgentBySlug(slug, viewerUserId, viewerRole),
     listEndpoints(slug, viewerUserId),
   ]);
 
@@ -71,7 +73,8 @@ export default async function AgentPlaygroundPage({ params }: PlaygroundPageProp
 
   const safeEndpoints = endpointList.map((endpoint) => {
     if ("authConfig" in endpoint) {
-      const { authConfig: _authConfig, ...rest } = endpoint;
+      const { authConfig, ...rest } = endpoint;
+      void authConfig;
       return rest;
     }
     return endpoint;

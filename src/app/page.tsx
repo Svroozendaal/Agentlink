@@ -13,10 +13,22 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: COPY.meta.homeTitle,
   description: COPY.meta.siteDescription,
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     title: COPY.meta.homeTitle,
     description: COPY.meta.siteDescription,
+    type: "website",
+    url: "/",
     locale: "en_US",
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: COPY.meta.homeTitle,
+    description: COPY.meta.siteDescription,
+    images: ["/opengraph-image"],
   },
 };
 
@@ -49,7 +61,7 @@ export default async function HomePage() {
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
             href="/agents"
-            className="rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white hover:bg-zinc-700"
+            className="min-w-[11.5rem] whitespace-nowrap rounded-xl bg-zinc-900 px-6 py-3 text-center text-sm font-semibold text-white hover:bg-zinc-700"
           >
             {COPY.landing.ctaPrimary}
           </Link>

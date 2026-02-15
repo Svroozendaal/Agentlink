@@ -31,7 +31,11 @@ type CreateAgentFormOutput = z.output<typeof CreateAgentFormSchema>;
 
 const protocolOptions = ["a2a", "rest", "mcp"] as const;
 
-export function NewAgentForm() {
+interface NewAgentFormProps {
+  canPublishImmediately: boolean;
+}
+
+export function NewAgentForm({ canPublishImmediately }: NewAgentFormProps) {
   const router = useRouter();
   const [skillInput, setSkillInput] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
@@ -59,7 +63,7 @@ export function NewAgentForm() {
       acceptsMessages: true,
       playgroundEnabled: false,
       connectEnabled: false,
-      isPublished: true,
+      isPublished: canPublishImmediately,
     },
   });
 
@@ -131,7 +135,12 @@ export function NewAgentForm() {
       return;
     }
 
-    router.push(`/agents/${createdSlug}`);
+    if (canPublishImmediately) {
+      router.push(`/agents/${createdSlug}`);
+      return;
+    }
+
+    router.push("/dashboard/agents");
   }
 
   return (
@@ -301,10 +310,16 @@ export function NewAgentForm() {
         Enable connect API for agent-to-agent calls
       </label>
 
-      <label className="inline-flex items-center gap-2 text-sm text-zinc-700">
-        <input type="checkbox" {...register("isPublished")} />
-        Publish immediately after creation
-      </label>
+      {canPublishImmediately ? (
+        <label className="inline-flex items-center gap-2 text-sm text-zinc-700">
+          <input type="checkbox" {...register("isPublished")} />
+          Publish immediately after creation
+        </label>
+      ) : (
+        <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+          After submission, this agent will be pending admin approval before publication.
+        </p>
+      )}
 
       {formError ? <p className="text-sm text-red-600">{formError}</p> : null}
 

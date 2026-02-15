@@ -1,2 +1,0 @@
-ClientID : Ov23licJrVvxDb5CeGms
-Client secret: 97cb3f26cc32fab86b3e9bf9f8e2556b9d44f8cc

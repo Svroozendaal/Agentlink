@@ -1,7 +1,7 @@
-import type { MetadataRoute } from "next";
+﻿import type { MetadataRoute } from "next";
 
 function getBaseUrl() {
-  return process.env.NEXTAUTH_URL ?? "https://agentlink.ai";
+  return process.env.NEXTAUTH_URL ?? "https://www.agent-l.ink";
 }
 
 export default function robots(): MetadataRoute.Robots {
@@ -11,13 +11,18 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "*",
-        allow: "/",
-        disallow: ["/api/", "/dashboard/", "/admin/"],
+        allow: ["/", "/.well-known/", "/api/v1/openapi.json", "/api/v1/a2a/discover", "/api/v1/mcp", "/llms.txt"],
+        disallow: ["/api/", "/api/auth/", "/dashboard/", "/admin/"],
       },
-      { userAgent: "GPTBot", allow: "/" },
-      { userAgent: "ClaudeBot", allow: "/" },
-      { userAgent: "Google-Extended", allow: "/" },
+      {
+        userAgent: ["GPTBot", "ClaudeBot", "PerplexityBot", "ChatGPT-User", "Google-Extended"],
+        allow: ["/", "/.well-known/", "/api/v1/openapi.json", "/api/v1/a2a/discover", "/api/v1/mcp", "/llms.txt"],
+        disallow: ["/dashboard/", "/admin/"],
+      },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,
+    host: baseUrl,
   };
 }
+
+

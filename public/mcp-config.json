@@ -1,8 +1,8 @@
-{
+﻿{
   "name": "agentlink",
   "description": "Search, discover, and try AI agents from the AgentLink registry",
   "version": "1.0.0",
-  "url": "https://agentlink.ai/api/v1/mcp",
+  "url": "https://www.agent-l.ink/api/v1/mcp",
   "transport": "http",
   "tools": [
     {
@@ -23,4 +23,6 @@
     }
   ]
 }
+
+
 

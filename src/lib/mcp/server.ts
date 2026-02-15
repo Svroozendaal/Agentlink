@@ -35,12 +35,18 @@ export const MCP_TOOLS: McpToolDefinition[] = [
           items: { type: "string" },
           description: "Filter by specific skills",
         },
+        tags: {
+          type: "array",
+          items: { type: "string" },
+          description: "Filter by specific tags",
+        },
         category: { type: "string", description: "Filter by category" },
         protocols: {
           type: "array",
           items: { type: "string" },
           description: "Filter by supported protocols (rest, a2a, mcp, etc.)",
         },
+        minRating: { type: "number", description: "Minimum average rating (1-5)" },
         limit: { type: "number", description: "Max results (default 5, max 20)" },
       },
       required: [],
@@ -109,6 +115,14 @@ function readLimit(value: unknown, fallback = 5, max = 20) {
   return Math.max(1, Math.min(Math.floor(value), max));
 }
 
+function readRating(value: unknown) {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return undefined;
+  }
+
+  return Math.max(1, Math.min(5, Math.floor(value)));
+}
+
 function toTextContent(payload: unknown) {
   return {
     content: [
@@ -130,10 +144,12 @@ async function callSearchAgents(args: Record<string, unknown>) {
   const result = await searchAgents({
     q: readString(args.query, "").trim() || undefined,
     skills: readStringArray(args.skills),
+    tags: readStringArray(args.tags),
     protocols: readStringArray(args.protocols),
     endpointTypes: undefined,
     category: readString(args.category, "").trim() || undefined,
     pricing: undefined,
+    minRating: readRating(args.minRating),
     verified: undefined,
     playground: undefined,
     connect: undefined,

@@ -50,10 +50,12 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   const result = await searchAgents({
     q: undefined,
     skills: undefined,
+    tags: undefined,
     protocols: undefined,
     endpointTypes: undefined,
     category,
     pricing: undefined,
+    minRating: undefined,
     verified: undefined,
     playground: undefined,
     connect: undefined,

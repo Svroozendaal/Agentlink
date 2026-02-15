@@ -1,5 +1,6 @@
 export type PricingModel = "FREE" | "FREEMIUM" | "PAID" | "ENTERPRISE";
 export type AgentProtocol = "a2a" | "rest" | "mcp";
+export type AgentModerationStatus = "PENDING" | "APPROVED" | "REJECTED";
 
 export interface AgentSummary {
   id: string;
@@ -12,6 +13,7 @@ export interface AgentSummary {
   protocols: AgentProtocol[];
   pricingModel: PricingModel;
   isPublished: boolean;
+  moderationStatus?: AgentModerationStatus;
   isVerified: boolean;
   averageRating?: number | null;
   reviewCount?: number;
@@ -34,10 +36,19 @@ export interface AgentDetail extends AgentSummary {
   pricingDetails?: string | null;
   bannerUrl?: string | null;
   metadata?: Record<string, unknown> | null;
+  moderationNote?: string | null;
+  moderatedAt?: string | null;
+  moderatedById?: string | null;
   ownerId: string;
 }
 
-export type AgentSearchSort = "relevance" | "rating" | "newest" | "name";
+export type AgentSearchSort =
+  | "relevance"
+  | "rating"
+  | "reviews"
+  | "endorsements"
+  | "newest"
+  | "name";
 
 export interface AgentCategoryCount {
   category: string;

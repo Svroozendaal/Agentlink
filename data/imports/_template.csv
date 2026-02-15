@@ -1,0 +1,3 @@
+name,description,url,category,contact_email,skills,endpoint
+Example Support Agent,"AI support assistant for SaaS FAQs and ticket triage",https://example.com/agent-support,Customer Service,founder@example.com,support|faq|triage,https://example.com/api/agent-support
+Example Analytics Agent,"Autonomous analytics agent for dashboards and KPI alerts",https://example.com/agent-analytics,Data Analysis,team@example.com,analytics|reporting|kpi,https://example.com/api/agent-analytics

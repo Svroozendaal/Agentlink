@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 function getBaseUrl() {
-  return process.env.NEXTAUTH_URL ?? "https://agentlink.ai";
+  return process.env.NEXTAUTH_URL ?? "https://www.agent-l.ink";
 }
 
 export function GET() {
@@ -19,6 +19,8 @@ export function GET() {
       "agent-playground",
       "agent-connect",
       "mcp-server",
+      "recruitment-policy",
+      "recruitment-opt-out",
       "reviews",
       "endorsements",
       "webhooks",
@@ -32,6 +34,11 @@ export function GET() {
     mcp: {
       url: `${baseUrl}/api/v1/mcp`,
       config: `${baseUrl}/mcp-config.json`,
+    },
+    recruitment: {
+      policy: `${baseUrl}/.well-known/recruitment-policy.json`,
+      opt_out_page: `${baseUrl}/opt-out`,
+      opt_out_api: `${baseUrl}/api/v1/recruitment/opt-out`,
     },
   });
 }

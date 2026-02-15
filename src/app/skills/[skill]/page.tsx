@@ -31,10 +31,12 @@ export default async function SkillPage({ params }: SkillPageProps) {
     searchAgents({
       q: undefined,
       skills: [decodedSkill],
+      tags: undefined,
       protocols: undefined,
       endpointTypes: undefined,
       category: undefined,
       pricing: undefined,
+      minRating: undefined,
       verified: undefined,
       playground: undefined,
       connect: undefined,
@@ -87,4 +89,3 @@ export default async function SkillPage({ params }: SkillPageProps) {
     </main>
   );
 }
-

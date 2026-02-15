@@ -1,4 +1,4 @@
-interface JsonLdReview {
+﻿interface JsonLdReview {
   authorName: string;
   rating: number;
   body: string;
@@ -17,7 +17,7 @@ interface JsonLdAgent {
 }
 
 function baseUrl() {
-  return process.env.NEXTAUTH_URL ?? "https://agentlink.ai";
+  return process.env.NEXTAUTH_URL ?? "https://www.agent-l.ink";
 }
 
 export function agentJsonLd(agent: JsonLdAgent) {
@@ -84,4 +84,6 @@ export function breadcrumbJsonLd(items: { name: string; url: string }[]) {
     })),
   };
 }
+
+
 

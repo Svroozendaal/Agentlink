@@ -1,26 +1,37 @@
-# SEO & Discoverability Checklist
+﻿# SEO And Discoverability Checklist
 
-## Per Page
-- [ ] Unique `<title>` tag (50-60 chars)
-- [ ] Unique meta description (150-160 chars)
-- [ ] Canonical URL set
-- [ ] Open Graph tags (title, description, image, url)
-- [ ] Twitter Card tags
-- [ ] JSON-LD structured data (where applicable)
-- [ ] H1 tag present and unique
-- [ ] Internal links to related pages
-- [ ] Mobile responsive layout
-- [ ] Image alt text where applicable
+## Per Public Page
+- [ ] Unique `title`
+- [ ] Unique meta description
+- [ ] Canonical URL
+- [ ] Open Graph metadata
+- [ ] Valid heading hierarchy (`h1` present)
+- [ ] Internal links to related sections
+- [ ] Mobile-friendly rendering
+- [ ] Image alt text where relevant
+- [ ] Structured data where applicable
 
-## Global
-- [ ] `sitemap.xml` includes all public pages
-- [ ] `robots.txt` allows search engines and AI crawlers
-- [ ] `/.well-known/agent-card.json` is valid
-- [ ] `/.well-known/agents.json` has live data
-- [ ] `/api/v1/openapi.json` is complete
-- [ ] MCP server returns tool listing
-- [ ] Category pages exist
-- [ ] Skill pages exist for top skills
-- [ ] Blog has starter content
-- [ ] No broken internal links
+## Global Requirements
+- [ ] `sitemap.xml` contains all intended public routes
+- [ ] `robots.txt` allows indexation for public pages
+- [ ] `/llms.txt` resolves and lists canonical discovery endpoints
+- [ ] `/.well-known/agent-card.json` resolves and is valid JSON
+- [ ] `/.well-known/agents.json` resolves and reflects live counts
+- [ ] `/.well-known/recruitment-policy.json` resolves
+- [ ] `/.well-known/ai-plugin.json` resolves and references the canonical OpenAPI URL
+- [ ] `/api/v1/openapi.json` is up to date with implemented endpoints
+- [ ] `/api/v1/a2a/discover` resolves
+- [ ] `/api/v1/mcp` returns tool listing and executes tool calls
 
+## Search Engine Console Setup
+- [ ] Create Google Search Console property for `https://www.agent-l.ink` (and/or domain property `agent-l.ink`)
+- [ ] Add and verify ownership (DNS TXT recommended for domain-level verification)
+- [ ] Submit sitemap: `https://www.agent-l.ink/sitemap.xml`
+- [ ] Inspect and request indexing for key pages (`/`, `/agents`, `/docs`, `/register`)
+- [ ] Add Bing Webmaster Tools property and verification (optional but recommended)
+
+## Release Checklist
+- [ ] Run link checks for `/`, `/agents`, `/docs`, `/blog`, `/categories`
+- [ ] Verify social preview metadata for top landing pages
+- [ ] Validate sitemap freshness after new public route additions
+- [ ] Re-run discoverability checks after major route or metadata changes

@@ -108,6 +108,16 @@ export async function getPublicFeed(query: FeedQueryInput): Promise<FeedResult> 
   return fetchFeed(
     {
       isPublic: true,
+      OR: [
+        { targetAgentId: null },
+        {
+          targetAgent: {
+            is: {
+              isPublished: true,
+            },
+          },
+        },
+      ],
     },
     query,
   );

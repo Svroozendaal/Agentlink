@@ -6,9 +6,29 @@ import { randomBytes } from "crypto";
 
 import { db } from "@/lib/db";
 
-const githubClientId = process.env.GITHUB_ID ?? process.env.GITHUB_CLIENT_ID ?? "";
+const githubClientId = process.env.GITHUB_CLIENT_ID ?? process.env.GITHUB_ID ?? "";
 const githubClientSecret =
-  process.env.GITHUB_SECRET ?? process.env.GITHUB_CLIENT_SECRET ?? "";
+  process.env.GITHUB_CLIENT_SECRET ?? process.env.GITHUB_SECRET ?? "";
+
+if (
+  process.env.GITHUB_CLIENT_ID &&
+  process.env.GITHUB_ID &&
+  process.env.GITHUB_CLIENT_ID !== process.env.GITHUB_ID
+) {
+  console.warn(
+    "[auth] GITHUB_CLIENT_ID and GITHUB_ID differ. Using GITHUB_CLIENT_ID for GitHub OAuth.",
+  );
+}
+
+if (
+  process.env.GITHUB_CLIENT_SECRET &&
+  process.env.GITHUB_SECRET &&
+  process.env.GITHUB_CLIENT_SECRET !== process.env.GITHUB_SECRET
+) {
+  console.warn(
+    "[auth] GITHUB_CLIENT_SECRET and GITHUB_SECRET differ. Using GITHUB_CLIENT_SECRET for GitHub OAuth.",
+  );
+}
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(db),
