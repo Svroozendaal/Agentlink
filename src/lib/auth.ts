@@ -2,6 +2,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { Role } from "@prisma/client";
 import type { NextAuthOptions } from "next-auth";
 import GitHubProvider from "next-auth/providers/github";
+import { randomBytes } from "crypto";
 
 import { db } from "@/lib/db";
 
@@ -23,6 +24,19 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async session({ session, user }) {
+      const dbUser = await db.user.findUnique({
+        where: { id: user.id },
+        select: { referralCode: true },
+      });
+
+      if (!dbUser?.referralCode) {
+        const referralCode = `AL${randomBytes(4).toString("hex").toUpperCase()}`;
+        await db.user.update({
+          where: { id: user.id },
+          data: { referralCode },
+        });
+      }
+
       if (session.user) {
         session.user.id = user.id;
         session.user.role = user.role ?? Role.USER;

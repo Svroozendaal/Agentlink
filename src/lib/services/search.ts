@@ -21,6 +21,11 @@ interface SearchRow {
   updatedAt: Date;
   rating: number | null;
   reviewCount: number;
+  endorsementCount: number;
+  acceptsMessages: boolean;
+  playgroundEnabled: boolean;
+  connectEnabled: boolean;
+  isEarlyAdopter: boolean;
   relevance: number;
 }
 
@@ -54,6 +59,11 @@ export interface DiscoverableAgent {
   updatedAt: Date;
   rating: number | null;
   reviewCount: number;
+  endorsementCount: number;
+  acceptsMessages: boolean;
+  playgroundEnabled: boolean;
+  connectEnabled: boolean;
+  isEarlyAdopter: boolean;
 }
 
 export interface AgentSearchResult {
@@ -70,11 +80,18 @@ export interface DiscoveryFilterOptions {
   skills: string[];
   protocols: string[];
   categories: string[];
+  endpointTypes: string[];
 }
 
 export interface AgentCategoryCount {
   category: string;
   count: number;
+}
+
+export interface PlatformStats {
+  agents: number;
+  reviews: number;
+  endorsements: number;
 }
 
 function normalizeSort(
@@ -131,6 +148,11 @@ function mapSearchRow(row: SearchRow): DiscoverableAgent {
     updatedAt: row.updatedAt,
     rating: row.rating,
     reviewCount: row.reviewCount,
+    endorsementCount: row.endorsementCount,
+    acceptsMessages: row.acceptsMessages,
+    playgroundEnabled: row.playgroundEnabled,
+    connectEnabled: row.connectEnabled,
+    isEarlyAdopter: row.isEarlyAdopter,
   };
 }
 
@@ -173,6 +195,25 @@ export async function searchAgents(query: SearchAgentsQueryInput): Promise<Agent
     whereClauses.push(Prisma.sql`a.is_verified = ${query.verified}`);
   }
 
+  if (query.playground !== undefined) {
+    whereClauses.push(Prisma.sql`a.playground_enabled = ${query.playground}`);
+  }
+
+  if (query.connect !== undefined) {
+    whereClauses.push(Prisma.sql`a.connect_enabled = ${query.connect}`);
+  }
+
+  if (query.endpointTypes && query.endpointTypes.length > 0) {
+    whereClauses.push(
+      Prisma.sql`EXISTS (
+        SELECT 1
+        FROM agent_endpoints e
+        WHERE e.agent_id = a.id
+        AND e.type::text = ANY(ARRAY[${Prisma.join(query.endpointTypes)}]::text[])
+      )`,
+    );
+  }
+
   const whereSql = Prisma.join(whereClauses, " AND ");
   const relevanceSql = query.q
     ? Prisma.sql`ts_rank(${searchVector}, plainto_tsquery('simple', ${query.q}))`
@@ -186,14 +227,6 @@ export async function searchAgents(query: SearchAgentsQueryInput): Promise<Agent
       WHERE ${whereSql}
     `),
     db.$queryRaw<SearchRow[]>(Prisma.sql`
-      WITH rating_stats AS (
-        SELECT
-          agent_id,
-          AVG(rating)::float AS avg_rating,
-          COUNT(*)::int AS review_count
-        FROM reviews
-        GROUP BY agent_id
-      )
       SELECT
         a.id AS "id",
         a.slug AS "slug",
@@ -209,11 +242,15 @@ export async function searchAgents(query: SearchAgentsQueryInput): Promise<Agent
         a.logo_url AS "logoUrl",
         a.created_at AS "createdAt",
         a.updated_at AS "updatedAt",
-        rating_stats.avg_rating AS "rating",
-        COALESCE(rating_stats.review_count, 0)::int AS "reviewCount",
+        CASE WHEN a.review_count > 0 THEN a.average_rating ELSE NULL END AS "rating",
+        a.review_count::int AS "reviewCount",
+        a.endorsement_count::int AS "endorsementCount",
+        a.accepts_messages AS "acceptsMessages",
+        a.playground_enabled AS "playgroundEnabled",
+        a.connect_enabled AS "connectEnabled",
+        a.is_early_adopter AS "isEarlyAdopter",
         ${relevanceSql} AS "relevance"
       FROM agent_profiles a
-      LEFT JOIN rating_stats ON rating_stats.agent_id = a.id
       WHERE ${whereSql}
       ORDER BY ${orderBySql}
       LIMIT ${limit}
@@ -235,7 +272,7 @@ export async function searchAgents(query: SearchAgentsQueryInput): Promise<Agent
 }
 
 export async function getDiscoveryFilterOptions(): Promise<DiscoveryFilterOptions> {
-  const [skillRows, protocolRows, categoryRows] = await Promise.all([
+  const [skillRows, protocolRows, categoryRows, endpointTypeRows] = await Promise.all([
     db.$queryRaw<ValueRow[]>(Prisma.sql`
       SELECT DISTINCT skill AS "value"
       FROM agent_profiles, UNNEST(skills) AS skill
@@ -257,12 +294,20 @@ export async function getDiscoveryFilterOptions(): Promise<DiscoveryFilterOption
       ORDER BY category ASC
       LIMIT 30
     `),
+    db.$queryRaw<ValueRow[]>(Prisma.sql`
+      SELECT DISTINCT e.type::text AS "value"
+      FROM agent_endpoints e
+      INNER JOIN agent_profiles a ON a.id = e.agent_id
+      WHERE a.is_published = TRUE
+      ORDER BY e.type::text ASC
+    `),
   ]);
 
   return {
     skills: uniqueSorted(skillRows.map((row) => row.value)),
     protocols: uniqueSorted(protocolRows.map((row) => row.value)),
     categories: uniqueSorted(categoryRows.map((row) => row.value)),
+    endpointTypes: uniqueSorted(endpointTypeRows.map((row) => row.value)),
   };
 }
 
@@ -270,14 +315,6 @@ export async function getFeaturedAgents(limit = 6): Promise<DiscoverableAgent[]>
   const safeLimit = Math.max(1, Math.min(limit, 24));
 
   const rows = await db.$queryRaw<SearchRow[]>(Prisma.sql`
-    WITH rating_stats AS (
-      SELECT
-        agent_id,
-        AVG(rating)::float AS avg_rating,
-        COUNT(*)::int AS review_count
-      FROM reviews
-      GROUP BY agent_id
-    )
     SELECT
       a.id AS "id",
       a.slug AS "slug",
@@ -293,13 +330,27 @@ export async function getFeaturedAgents(limit = 6): Promise<DiscoverableAgent[]>
       a.logo_url AS "logoUrl",
       a.created_at AS "createdAt",
       a.updated_at AS "updatedAt",
-      rating_stats.avg_rating AS "rating",
-      COALESCE(rating_stats.review_count, 0)::int AS "reviewCount",
+      CASE WHEN a.review_count > 0 THEN a.average_rating ELSE NULL END AS "rating",
+      a.review_count::int AS "reviewCount",
+      a.endorsement_count::int AS "endorsementCount",
+      a.accepts_messages AS "acceptsMessages",
+      a.playground_enabled AS "playgroundEnabled",
+      a.connect_enabled AS "connectEnabled",
+      a.is_early_adopter AS "isEarlyAdopter",
       0 AS "relevance"
     FROM agent_profiles a
-    LEFT JOIN rating_stats ON rating_stats.agent_id = a.id
     WHERE a.is_published = TRUE
-    ORDER BY a.is_verified DESC, a.created_at DESC
+    ORDER BY
+      (
+        (a.review_count * 2) +
+        (a.average_rating * 10) +
+        (a.endorsement_count * 1) +
+        (CASE WHEN a.is_early_adopter THEN 20 ELSE 0 END) +
+        (CASE WHEN a.playground_enabled THEN 15 ELSE 0 END) +
+        (CASE WHEN a.connect_enabled THEN 5 ELSE 0 END) +
+        (CASE WHEN a.is_verified THEN 10 ELSE 0 END)
+      ) DESC,
+      a.updated_at DESC
     LIMIT ${safeLimit}
   `);
 
@@ -321,4 +372,39 @@ export async function getTopCategories(limit = 8): Promise<AgentCategoryCount[]>
   `);
 
   return rows;
+}
+
+export async function getTopSkills(limit = 50): Promise<string[]> {
+  const safeLimit = Math.max(1, Math.min(limit, 100));
+  const rows = await db.$queryRaw<ValueRow[]>(Prisma.sql`
+    SELECT skill.value AS "value"
+    FROM (
+      SELECT UNNEST(skills) AS value
+      FROM agent_profiles
+      WHERE is_published = TRUE
+    ) skill
+    GROUP BY skill.value
+    ORDER BY COUNT(*) DESC, skill.value ASC
+    LIMIT ${safeLimit}
+  `);
+
+  return rows.map((row) => row.value);
+}
+
+export async function getPlatformStats(): Promise<PlatformStats> {
+  const [agents, reviews, endorsements] = await db.$transaction([
+    db.agentProfile.count({
+      where: { isPublished: true },
+    }),
+    db.review.count({
+      where: { status: "PUBLISHED" },
+    }),
+    db.endorsement.count(),
+  ]);
+
+  return {
+    agents,
+    reviews,
+    endorsements,
+  };
 }

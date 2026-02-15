@@ -5,6 +5,9 @@ import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import { getAgentBySlug } from "@/lib/services/agents";
 
+import { EditAgentForm } from "./edit-agent-form";
+import { EndpointManager } from "./endpoint-manager";
+
 interface EditAgentPageProps {
   params: Promise<{ slug: string }>;
 }
@@ -24,16 +27,34 @@ export default async function EditAgentPage({ params }: EditAgentPageProps) {
   }
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-6 py-10">
-      <h1 className="text-3xl font-semibold tracking-tight text-zinc-900">Edit agent</h1>
-      <p className="mt-2 text-zinc-600">
-        Edit UI volgt in een volgende iteratie. Gebruik voorlopig de API `PATCH /api/v1/agents/{agent.slug}`.
-      </p>
+    <main className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900">Edit agent</h1>
+        <p className="mt-2 text-zinc-600">
+          Update profile information and manage messaging, playground, and connect settings.
+        </p>
+      </div>
+
+      <EditAgentForm
+        slug={agent.slug}
+        initialValues={{
+          name: agent.name,
+          description: agent.description,
+          longDescription: agent.longDescription ?? "",
+          isPublished: agent.isPublished,
+          acceptsMessages: agent.acceptsMessages,
+          playgroundEnabled: agent.playgroundEnabled,
+          connectEnabled: agent.connectEnabled,
+        }}
+      />
+
+      <EndpointManager slug={agent.slug} />
+
       <Link
         href="/dashboard/agents"
-        className="mt-6 inline-flex rounded-lg border border-zinc-300 px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-100"
+        className="inline-flex rounded-lg border border-zinc-300 px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-100"
       >
-        Terug naar overzicht
+        Back to overview
       </Link>
     </main>
   );

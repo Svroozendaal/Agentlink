@@ -3,8 +3,13 @@ import { AgentGrid } from "@/components/agents/AgentGrid";
 import { AgentSearchBar } from "@/components/agents/AgentSearchBar";
 import { getDiscoveryFilterOptions, searchAgents } from "@/lib/services/search";
 import { SearchAgentsQuerySchema } from "@/lib/validations/agent";
+import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "Agent Directory | AgentLink",
+  description: "Discover AI agents by skills, protocols, rating, and category.",
+};
 
 interface AgentsDirectoryPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -50,6 +55,15 @@ function createPageHref(
   if (query.verified !== undefined) {
     params.set("verified", String(query.verified));
   }
+  if (query.playground !== undefined) {
+    params.set("playground", String(query.playground));
+  }
+  if (query.connect !== undefined) {
+    params.set("connect", String(query.connect));
+  }
+  if (query.endpointTypes && query.endpointTypes.length > 0) {
+    params.set("endpointTypes", query.endpointTypes.join(","));
+  }
   if (query.sort !== "relevance") {
     params.set("sort", query.sort);
   }
@@ -71,9 +85,12 @@ export default async function AgentsDirectoryPage({ searchParams }: AgentsDirect
     q: toSingleValue(rawParams.q),
     skills: toCommaValue(rawParams.skills),
     protocols: toCommaValue(rawParams.protocols),
+    endpointTypes: toCommaValue(rawParams.endpointTypes),
     category: toSingleValue(rawParams.category),
     pricing: toSingleValue(rawParams.pricing),
     verified: toSingleValue(rawParams.verified),
+    playground: toSingleValue(rawParams.playground),
+    connect: toSingleValue(rawParams.connect),
     sort: toSingleValue(rawParams.sort),
     page: toSingleValue(rawParams.page),
     limit: toSingleValue(rawParams.limit),
@@ -96,10 +113,10 @@ export default async function AgentsDirectoryPage({ searchParams }: AgentsDirect
     <main className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-6 sm:py-10">
       <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
         <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl">
-          Agent Discovery
+          Agent Directory
         </h1>
         <p className="mt-2 text-sm text-zinc-600 sm:text-base">
-          Vind agents op basis van skills, protocollen en use-cases.
+          Find agents by skills, protocols, and use cases.
         </p>
         <div className="mt-5">
           <AgentSearchBar
@@ -108,9 +125,12 @@ export default async function AgentsDirectoryPage({ searchParams }: AgentsDirect
             preservedParams={{
               skills: query.skills,
               protocols: query.protocols,
+              endpointTypes: query.endpointTypes,
               category: query.category,
               pricing: query.pricing,
               verified: query.verified !== undefined ? String(query.verified) : undefined,
+              playground: query.playground !== undefined ? String(query.playground) : undefined,
+              connect: query.connect !== undefined ? String(query.connect) : undefined,
               sort: query.sort,
               limit: String(query.limit),
             }}
@@ -125,9 +145,12 @@ export default async function AgentsDirectoryPage({ searchParams }: AgentsDirect
             q: query.q,
             skills: query.skills,
             protocols: query.protocols,
+            endpointTypes: query.endpointTypes,
             category: query.category,
             pricing: query.pricing,
             verified: query.verified,
+            playground: query.playground,
+            connect: query.connect,
             sort: query.sort,
             limit: query.limit,
           }}
@@ -137,10 +160,10 @@ export default async function AgentsDirectoryPage({ searchParams }: AgentsDirect
         <div>
           <div className="mb-4 flex items-center justify-between gap-3">
             <p className="text-sm text-zinc-600">
-              <strong className="text-zinc-900">{result.meta.total}</strong> resultaten gevonden
+              <strong className="text-zinc-900">{result.meta.total}</strong> results found
             </p>
             <p className="text-sm text-zinc-500">
-              Pagina {result.meta.page} van {result.meta.totalPages}
+              Page {result.meta.page} of {result.meta.totalPages}
             </p>
           </div>
 
@@ -153,11 +176,11 @@ export default async function AgentsDirectoryPage({ searchParams }: AgentsDirect
                   href={previousPage}
                   className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100"
                 >
-                  Vorige
+                  Previous
                 </a>
               ) : (
                 <span className="rounded-lg border border-zinc-200 px-4 py-2 text-sm text-zinc-400">
-                  Vorige
+                  Previous
                 </span>
               )}
 
@@ -166,11 +189,11 @@ export default async function AgentsDirectoryPage({ searchParams }: AgentsDirect
                   href={nextPage}
                   className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100"
                 >
-                  Volgende
+                  Next
                 </a>
               ) : (
                 <span className="rounded-lg border border-zinc-200 px-4 py-2 text-sm text-zinc-400">
-                  Volgende
+                  Next
                 </span>
               )}
             </div>

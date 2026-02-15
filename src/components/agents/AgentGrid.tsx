@@ -9,9 +9,9 @@ export function AgentGrid({ agents }: AgentGridProps) {
   if (agents.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-10 text-center">
-        <h2 className="text-lg font-semibold text-zinc-900">Geen agents gevonden</h2>
+        <h2 className="text-lg font-semibold text-zinc-900">No agents found</h2>
         <p className="mt-2 text-sm text-zinc-600">
-          Pas je zoekterm of filters aan om meer resultaten te zien.
+          Adjust your search query or filters to see more results.
         </p>
       </div>
     );

@@ -1,0 +1,25 @@
+import { NextRequest, NextResponse } from "next/server";
+
+import { requireAdmin } from "@/lib/auth/require-admin";
+import { AgentServiceError } from "@/lib/services/agents";
+import { getImportStats } from "@/lib/services/import";
+
+export async function GET(req: NextRequest) {
+  try {
+    await requireAdmin(req);
+    const data = await getImportStats();
+    return NextResponse.json({ data });
+  } catch (error) {
+    if (error instanceof AgentServiceError) {
+      return NextResponse.json(
+        { error: { code: error.code, message: error.message } },
+        { status: error.status },
+      );
+    }
+    return NextResponse.json(
+      { error: { code: "INTERNAL_ERROR", message: "Internal server error" } },
+      { status: 500 },
+    );
+  }
+}
+

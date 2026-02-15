@@ -6,9 +6,12 @@ interface AgentFiltersProps {
     q?: string;
     skills?: string[];
     protocols?: string[];
+    endpointTypes?: string[];
     category?: string;
     pricing?: PricingModel;
     verified?: boolean;
+    playground?: boolean;
+    connect?: boolean;
     sort: "relevance" | "rating" | "newest" | "name";
     limit: number;
   };
@@ -16,14 +19,15 @@ interface AgentFiltersProps {
     skills: string[];
     protocols: string[];
     categories: string[];
+    endpointTypes: string[];
   };
 }
 
 const SORT_OPTIONS = [
-  { value: "relevance", label: "Relevantie" },
-  { value: "rating", label: "Hoogste rating" },
-  { value: "newest", label: "Nieuwste" },
-  { value: "name", label: "Naam (A-Z)" },
+  { value: "relevance", label: "Relevance" },
+  { value: "rating", label: "Highest rated" },
+  { value: "newest", label: "Newest" },
+  { value: "name", label: "Name (A-Z)" },
 ] as const;
 
 const PRICING_OPTIONS: Array<{ value: PricingModel; label: string }> = [
@@ -69,7 +73,7 @@ function FilterForm({
 
       <div>
         <label htmlFor={`${idPrefix}-sort`} className="mb-2 block text-sm font-semibold text-zinc-800">
-          Sorteer op
+          Sort by
         </label>
         <select
           id={`${idPrefix}-sort`}
@@ -90,7 +94,7 @@ function FilterForm({
           htmlFor={`${idPrefix}-category`}
           className="mb-2 block text-sm font-semibold text-zinc-800"
         >
-          Categorie
+          Category
         </label>
         <select
           id={`${idPrefix}-category`}
@@ -98,7 +102,7 @@ function FilterForm({
           defaultValue={query.category ?? ""}
           className="h-10 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm"
         >
-          <option value="">Alle categorieen</option>
+          <option value="">All categories</option>
           {options.categories.map((category) => (
             <option key={category} value={category}>
               {category}
@@ -120,7 +124,7 @@ function FilterForm({
           defaultValue={query.pricing ?? ""}
           className="h-10 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm"
         >
-          <option value="">Alle modellen</option>
+          <option value="">All models</option>
           {PRICING_OPTIONS.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}
@@ -130,7 +134,7 @@ function FilterForm({
       </div>
 
       <fieldset>
-        <legend className="text-sm font-semibold text-zinc-800">Kwaliteit</legend>
+        <legend className="text-sm font-semibold text-zinc-800">Quality</legend>
         <label className="mt-2 flex items-center gap-2 text-sm text-zinc-700">
           <input
             type="checkbox"
@@ -139,7 +143,31 @@ function FilterForm({
             defaultChecked={query.verified === true}
             className="h-4 w-4 rounded border-zinc-300"
           />
-          Alleen verified agents
+          Verified agents only
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend className="text-sm font-semibold text-zinc-800">Capabilities</legend>
+        <label className="mt-2 flex items-center gap-2 text-sm text-zinc-700">
+          <input
+            type="checkbox"
+            name="playground"
+            value="true"
+            defaultChecked={query.playground === true}
+            className="h-4 w-4 rounded border-zinc-300"
+          />
+          Playground available
+        </label>
+        <label className="mt-2 flex items-center gap-2 text-sm text-zinc-700">
+          <input
+            type="checkbox"
+            name="connect"
+            value="true"
+            defaultChecked={query.connect === true}
+            className="h-4 w-4 rounded border-zinc-300"
+          />
+          Connect available
         </label>
       </fieldset>
 
@@ -147,7 +175,7 @@ function FilterForm({
         <legend className="text-sm font-semibold text-zinc-800">Skills</legend>
         <div className="mt-2 max-h-56 space-y-2 overflow-y-auto pr-2">
           {options.skills.length === 0 ? (
-            <p className="text-sm text-zinc-500">Nog geen skillfilters beschikbaar.</p>
+            <p className="text-sm text-zinc-500">No skill filters available yet.</p>
           ) : (
             options.skills.map((skill) => (
               <label key={skill} className="flex items-center gap-2 text-sm text-zinc-700">
@@ -166,10 +194,10 @@ function FilterForm({
       </fieldset>
 
       <fieldset>
-        <legend className="text-sm font-semibold text-zinc-800">Protocollen</legend>
+        <legend className="text-sm font-semibold text-zinc-800">Protocols</legend>
         <div className="mt-2 space-y-2">
           {options.protocols.length === 0 ? (
-            <p className="text-sm text-zinc-500">Nog geen protocolfilters beschikbaar.</p>
+            <p className="text-sm text-zinc-500">No protocol filters available yet.</p>
           ) : (
             options.protocols.map((protocol) => (
               <label key={protocol} className="flex items-center gap-2 text-sm text-zinc-700">
@@ -187,12 +215,34 @@ function FilterForm({
         </div>
       </fieldset>
 
+      <fieldset>
+        <legend className="text-sm font-semibold text-zinc-800">Endpoint types</legend>
+        <div className="mt-2 space-y-2">
+          {options.endpointTypes.length === 0 ? (
+            <p className="text-sm text-zinc-500">No endpoint type filters available yet.</p>
+          ) : (
+            options.endpointTypes.map((endpointType) => (
+              <label key={endpointType} className="flex items-center gap-2 text-sm text-zinc-700">
+                <input
+                  type="checkbox"
+                  name="endpointTypes"
+                  value={endpointType}
+                  defaultChecked={query.endpointTypes?.includes(endpointType)}
+                  className="h-4 w-4 rounded border-zinc-300"
+                />
+                {endpointType}
+              </label>
+            ))
+          )}
+        </div>
+      </fieldset>
+
       <div className="flex items-center gap-3">
         <button
           type="submit"
           className="h-10 rounded-lg bg-sky-700 px-4 text-sm font-semibold text-white transition hover:bg-sky-800"
         >
-          Filters toepassen
+          Apply filters
         </button>
         <a href={resetHref} className="text-sm font-medium text-zinc-600 hover:text-zinc-900">
           Reset

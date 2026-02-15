@@ -1,6 +1,7 @@
 import { Prisma, PricingModel } from "@prisma/client";
 
 import { db } from "@/lib/db";
+import { createActivityEvent } from "@/lib/services/activity";
 import { slugify, ensureUniqueSlug } from "@/lib/utils/slugify";
 import type {
   CreateAgentInput,
@@ -21,6 +22,13 @@ const AGENT_SUMMARY_SELECT = {
   pricingModel: true,
   isPublished: true,
   isVerified: true,
+  averageRating: true,
+  reviewCount: true,
+  endorsementCount: true,
+  acceptsMessages: true,
+  playgroundEnabled: true,
+  connectEnabled: true,
+  isEarlyAdopter: true,
   logoUrl: true,
   createdAt: true,
   updatedAt: true,
@@ -50,6 +58,13 @@ const OWNED_AGENT_SELECT = {
   slug: true,
   name: true,
   isPublished: true,
+  averageRating: true,
+  reviewCount: true,
+  endorsementCount: true,
+  acceptsMessages: true,
+  playgroundEnabled: true,
+  connectEnabled: true,
+  isEarlyAdopter: true,
   updatedAt: true,
   createdAt: true,
 } satisfies Prisma.AgentProfileSelect;
@@ -107,7 +122,12 @@ async function generateUniqueSlug(name: string, excludeAgentId?: string): Promis
   });
 }
 
-function mapCreateData(input: CreateAgentInput, ownerId: string, slug: string): Prisma.AgentProfileCreateInput {
+function mapCreateData(
+  input: CreateAgentInput,
+  ownerId: string,
+  slug: string,
+  isEarlyAdopter: boolean,
+): Prisma.AgentProfileCreateInput {
   return {
     slug,
     name: input.name,
@@ -128,6 +148,10 @@ function mapCreateData(input: CreateAgentInput, ownerId: string, slug: string): 
     pricingModel: input.pricingModel ?? PricingModel.FREE,
     pricingDetails: input.pricingDetails,
     isPublished: input.isPublished ?? false,
+    acceptsMessages: input.acceptsMessages ?? true,
+    playgroundEnabled: input.playgroundEnabled ?? false,
+    connectEnabled: input.connectEnabled ?? false,
+    isEarlyAdopter,
     logoUrl: input.logoUrl,
     bannerUrl: input.bannerUrl,
     metadata: input.metadata as Prisma.InputJsonValue | undefined,
@@ -139,11 +163,25 @@ export async function createAgentProfile(
   ownerId: string,
 ): Promise<AgentDetail> {
   const slug = await generateUniqueSlug(input.name);
+  const totalAgents = await db.agentProfile.count();
+  const isEarlyAdopter = totalAgents < 500;
 
-  return db.agentProfile.create({
-    data: mapCreateData(input, ownerId, slug),
+  const created = await db.agentProfile.create({
+    data: mapCreateData(input, ownerId, slug, isEarlyAdopter),
     select: AGENT_DETAIL_SELECT,
   });
+
+  await createActivityEvent({
+    type: "AGENT_CREATED",
+    actorId: ownerId,
+    targetAgentId: created.id,
+    metadata: {
+      slug: created.slug,
+      source: "web",
+    },
+  });
+
+  return created;
 }
 
 export async function registerAgentProfile(
@@ -155,7 +193,19 @@ export async function registerAgentProfile(
     isPublished: input.isPublished ?? false,
   };
 
-  return createAgentProfile(normalizedInput, ownerId);
+  const created = await createAgentProfile(normalizedInput, ownerId);
+
+  await createActivityEvent({
+    type: "AGENT_REGISTERED_VIA_API",
+    actorId: ownerId,
+    targetAgentId: created.id,
+    metadata: {
+      slug: created.slug,
+      source: "api",
+    },
+  });
+
+  return created;
 }
 
 export async function listAgents(query: ListAgentsQueryInput): Promise<AgentListResult> {
@@ -246,7 +296,7 @@ export async function updateAgentBySlug(
 ): Promise<AgentDetail> {
   const existing = await db.agentProfile.findUnique({
     where: { slug },
-    select: { id: true, ownerId: true, name: true, slug: true },
+    select: { id: true, ownerId: true, name: true, slug: true, isPublished: true },
   });
 
   if (!existing) {
@@ -280,6 +330,13 @@ export async function updateAgentBySlug(
       ...(input.pricingModel ? { pricingModel: input.pricingModel } : {}),
       ...(input.pricingDetails !== undefined ? { pricingDetails: input.pricingDetails } : {}),
       ...(input.isPublished !== undefined ? { isPublished: input.isPublished } : {}),
+      ...(input.acceptsMessages !== undefined
+        ? { acceptsMessages: input.acceptsMessages }
+        : {}),
+      ...(input.playgroundEnabled !== undefined
+        ? { playgroundEnabled: input.playgroundEnabled }
+        : {}),
+      ...(input.connectEnabled !== undefined ? { connectEnabled: input.connectEnabled } : {}),
       ...(input.logoUrl !== undefined ? { logoUrl: input.logoUrl } : {}),
       ...(input.bannerUrl !== undefined ? { bannerUrl: input.bannerUrl } : {}),
       ...(input.metadata !== undefined
@@ -289,6 +346,26 @@ export async function updateAgentBySlug(
     },
     select: AGENT_DETAIL_SELECT,
   });
+
+  await createActivityEvent({
+    type: "AGENT_UPDATED",
+    actorId: ownerId,
+    targetAgentId: updated.id,
+    metadata: {
+      slug: updated.slug,
+    },
+  });
+
+  if (existing.isPublished !== updated.isPublished && updated.isPublished) {
+    await createActivityEvent({
+      type: "AGENT_PUBLISHED",
+      actorId: ownerId,
+      targetAgentId: updated.id,
+      metadata: {
+        slug: updated.slug,
+      },
+    });
+  }
 
   return updated;
 }
@@ -310,9 +387,21 @@ export async function unpublishAgentBySlug(
     throw new AgentServiceError(403, "FORBIDDEN", "You do not own this agent");
   }
 
-  return db.agentProfile.update({
+  const updated = await db.agentProfile.update({
     where: { id: existing.id },
     data: { isPublished: false },
     select: AGENT_DETAIL_SELECT,
   });
+
+  await createActivityEvent({
+    type: "AGENT_UPDATED",
+    actorId: ownerId,
+    targetAgentId: updated.id,
+    metadata: {
+      slug: updated.slug,
+      action: "unpublish",
+    },
+  });
+
+  return updated;
 }

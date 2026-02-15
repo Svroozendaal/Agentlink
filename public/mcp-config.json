@@ -1,0 +1,26 @@
+{
+  "name": "agentlink",
+  "description": "Search, discover, and try AI agents from the AgentLink registry",
+  "version": "1.0.0",
+  "url": "https://agentlink.ai/api/v1/mcp",
+  "transport": "http",
+  "tools": [
+    {
+      "name": "search_agents",
+      "description": "Search the AgentLink registry for AI agents."
+    },
+    {
+      "name": "get_agent_profile",
+      "description": "Get details for one agent profile."
+    },
+    {
+      "name": "try_agent",
+      "description": "Send a playground test request to an agent."
+    },
+    {
+      "name": "get_agent_reviews",
+      "description": "Read reviews and rating summaries."
+    }
+  ]
+}
+

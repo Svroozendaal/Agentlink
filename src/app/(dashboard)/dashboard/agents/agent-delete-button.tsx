@@ -15,7 +15,7 @@ export function AgentDeleteButton({ slug }: AgentDeleteButtonProps) {
 
   async function handleDelete() {
     const confirmed = window.confirm(
-      "Weet je zeker dat je deze agent wilt unpublishen?",
+      "Are you sure you want to unpublish this agent?",
     );
 
     if (!confirmed) {
@@ -31,12 +31,12 @@ export function AgentDeleteButton({ slug }: AgentDeleteButtonProps) {
       });
 
       if (!response.ok) {
-        throw new Error("Kon agent niet verwijderen.");
+        throw new Error("Could not unpublish agent.");
       }
 
       router.refresh();
     } catch (deleteError) {
-      setError(deleteError instanceof Error ? deleteError.message : "Onbekende fout");
+      setError(deleteError instanceof Error ? deleteError.message : "Unknown error");
     } finally {
       setIsDeleting(false);
     }

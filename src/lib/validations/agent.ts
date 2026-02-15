@@ -69,6 +69,9 @@ export const CreateAgentSchema = z.object({
   pricingModel: z.nativeEnum(PricingModel).optional().default(PricingModel.FREE),
   pricingDetails: optionalFromEmpty(z.string().trim().max(300)),
   isPublished: z.boolean().optional().default(false),
+  acceptsMessages: z.boolean().optional().default(true),
+  playgroundEnabled: z.boolean().optional().default(false),
+  connectEnabled: z.boolean().optional().default(false),
   logoUrl: optionalFromEmpty(UrlSchema),
   bannerUrl: optionalFromEmpty(UrlSchema),
   metadata: z.record(z.string(), z.unknown()).optional(),
@@ -88,6 +91,9 @@ const UpdateAgentSchemaFields = z.object({
   pricingModel: z.nativeEnum(PricingModel).optional(),
   pricingDetails: optionalFromEmpty(z.string().trim().max(300)),
   isPublished: z.boolean().optional(),
+  acceptsMessages: z.boolean().optional(),
+  playgroundEnabled: z.boolean().optional(),
+  connectEnabled: z.boolean().optional(),
   logoUrl: optionalFromEmpty(UrlSchema),
   bannerUrl: optionalFromEmpty(UrlSchema),
   metadata: z.record(z.string(), z.unknown()).optional(),
@@ -154,6 +160,12 @@ export const SearchAgentsQuerySchema = z.object({
     }),
   pricing: z.nativeEnum(PricingModel).optional(),
   verified: z.preprocess(parseBooleanInput, z.boolean().optional()),
+  playground: z.preprocess(parseBooleanInput, z.boolean().optional()),
+  connect: z.preprocess(parseBooleanInput, z.boolean().optional()),
+  endpointTypes: z
+    .string()
+    .optional()
+    .transform((value) => parseCommaSeparated(value)),
   sort: z.enum(["relevance", "rating", "newest", "name"]).default("relevance"),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(50).default(12),
@@ -174,12 +186,13 @@ export const RegisterAgentSchema = CreateAgentSchema.extend({
 
 export const CreateReviewSchema = z.object({
   rating: z.coerce.number().int().min(1).max(5),
-  comment: optionalFromEmpty(z.string().trim().min(3).max(1200)),
+  comment: optionalFromEmpty(z.string().trim().min(20).max(2000)),
 });
 
 export const ListReviewsQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(50).default(10),
+  sort: z.enum(["newest", "highest", "lowest", "helpful"]).default("newest"),
 });
 
 export type CreateAgentInput = z.infer<typeof CreateAgentSchema>;

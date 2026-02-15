@@ -1,5 +1,4 @@
 import { getAgentBySlug } from "@/lib/services/agents";
-import { db } from "@/lib/db";
 
 interface BuildAgentCardOptions {
   viewerUserId?: string;
@@ -24,6 +23,7 @@ export interface AgentCardPayload {
   reputation: {
     rating: number | null;
     reviews: number;
+    endorsements: number;
   };
   availability: {
     uptime?: string;
@@ -57,12 +57,6 @@ export async function buildAgentCardBySlug(
     return null;
   }
 
-  const aggregate = await db.review.aggregate({
-    where: { agentId: agent.id },
-    _avg: { rating: true },
-    _count: { _all: true },
-  });
-
   const metadata =
     agent.metadata && typeof agent.metadata === "object" && !Array.isArray(agent.metadata)
       ? (agent.metadata as Record<string, unknown>)
@@ -88,8 +82,9 @@ export async function buildAgentCardBySlug(
       ...(agent.pricingDetails ? { details: agent.pricingDetails } : {}),
     },
     reputation: {
-      rating: aggregate._avg.rating ?? null,
-      reviews: aggregate._count._all,
+      rating: agent.reviewCount > 0 ? agent.averageRating : null,
+      reviews: agent.reviewCount,
+      endorsements: agent.endorsementCount,
     },
     availability: {
       ...(uptime ? { uptime } : {}),

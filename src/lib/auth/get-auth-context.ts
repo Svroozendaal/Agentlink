@@ -18,6 +18,7 @@ export interface AuthenticatedUser {
 export interface AuthContext {
   user: AuthenticatedUser;
   method: AuthMethod;
+  apiKeyId?: string;
 }
 
 export async function getAuthContext(req: NextRequest): Promise<AuthContext | null> {
@@ -32,6 +33,7 @@ export async function getAuthContext(req: NextRequest): Promise<AuthContext | nu
         return {
           user: validatedKey.user,
           method: "api-key",
+          apiKeyId: validatedKey.apiKeyId,
         };
       }
     }

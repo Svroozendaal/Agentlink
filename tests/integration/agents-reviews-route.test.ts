@@ -18,7 +18,7 @@ vi.mock("@/lib/services/reviews", async () => {
   return {
     ...actual,
     listAgentReviewsBySlug: vi.fn(),
-    upsertAgentReviewBySlug: vi.fn(),
+    createAgentReviewBySlug: vi.fn(),
   };
 });
 
@@ -34,7 +34,12 @@ describe("/api/v1/agents/[slug]/reviews route", () => {
         {
           id: "review_1",
           rating: 5,
+          title: "Great reliability",
+          content: "Great reliability over two weeks of continuous usage.",
           comment: "Great reliability",
+          isVerifiedUse: true,
+          status: "PUBLISHED",
+          helpfulCount: 2,
           createdAt: new Date(),
           updatedAt: new Date(),
           reviewer: {
@@ -42,6 +47,7 @@ describe("/api/v1/agents/[slug]/reviews route", () => {
             name: "Reviewer",
             image: null,
           },
+          authorAgent: null,
         },
       ],
       meta: {
@@ -94,12 +100,16 @@ describe("/api/v1/agents/[slug]/reviews route", () => {
       },
     });
 
-    vi.mocked(reviewService.upsertAgentReviewBySlug).mockResolvedValue({
-      created: true,
+    vi.mocked(reviewService.createAgentReviewBySlug).mockResolvedValue({
       review: {
         id: "review_1",
         rating: 4,
-        comment: "Strong integration quality.",
+        title: "Strong integration quality",
+        content: "Strong integration quality across triage and fallback flows.",
+        comment: "Strong integration quality across triage and fallback flows.",
+        isVerifiedUse: false,
+        status: "PUBLISHED",
+        helpfulCount: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
         reviewer: {
@@ -107,6 +117,7 @@ describe("/api/v1/agents/[slug]/reviews route", () => {
           name: "Reviewer",
           image: null,
         },
+        authorAgent: null,
       },
       summary: {
         averageRating: 4.3,
@@ -117,7 +128,11 @@ describe("/api/v1/agents/[slug]/reviews route", () => {
     const request = new NextRequest("http://localhost/api/v1/agents/supportpilot/reviews", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ rating: 4, comment: "Strong integration quality." }),
+      body: JSON.stringify({
+        rating: 4,
+        title: "Strong integration quality",
+        content: "Strong integration quality across triage and fallback flows.",
+      }),
     });
     const response = await POST(request, {
       params: Promise.resolve({ slug: "supportpilot" }),

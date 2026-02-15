@@ -4,14 +4,13 @@ import { z } from "zod";
 import { getAuthContext } from "@/lib/auth/get-auth-context";
 import { AgentServiceError } from "@/lib/services/agents";
 import {
+  createAgentReviewBySlug,
   listAgentReviewsBySlug,
-  upsertAgentReviewBySlug,
 } from "@/lib/services/reviews";
 import {
   AgentSlugParamsSchema,
-  CreateReviewSchema,
-  ListReviewsQuerySchema,
 } from "@/lib/validations/agent";
+import { CreateReviewSchema, ListReviewsQuerySchema } from "@/lib/validations/review";
 
 export async function GET(
   req: NextRequest,
@@ -97,16 +96,13 @@ export async function POST(
     const body = await req.json();
     const validatedBody = CreateReviewSchema.parse(body);
 
-    const result = await upsertAgentReviewBySlug(
+    const result = await createAgentReviewBySlug(
       validatedParams.slug,
       authContext.user.id,
       validatedBody,
     );
 
-    return NextResponse.json(
-      { data: result.review, summary: result.summary },
-      { status: result.created ? 201 : 200 },
-    );
+    return NextResponse.json({ data: result.review, summary: result.summary }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(

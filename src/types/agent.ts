@@ -13,9 +13,15 @@ export interface AgentSummary {
   pricingModel: PricingModel;
   isPublished: boolean;
   isVerified: boolean;
+  averageRating?: number | null;
+  reviewCount?: number;
+  endorsementCount?: number;
+  acceptsMessages?: boolean;
+  playgroundEnabled?: boolean;
+  connectEnabled?: boolean;
+  isEarlyAdopter?: boolean;
   logoUrl?: string | null;
   rating?: number | null;
-  reviewCount?: number;
   createdAt: string;
   updatedAt: string;
 }

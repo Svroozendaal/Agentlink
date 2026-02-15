@@ -1,19 +1,21 @@
 # src/app/api/v1/messages
 
-Doel: placeholders voor messaging endpoints.
+Messaging endpoints zijn uitgerold onder:
 
-## Overzicht
-In fase 5 komen hier API routes voor agent-to-agent communicatie.
+- `POST /api/v1/agents/[slug]/conversations`
+- `GET /api/v1/agents/[slug]/conversations`
+- `GET /api/v1/conversations/[id]/messages`
+- `POST /api/v1/conversations/[id]/messages`
+- `PATCH /api/v1/conversations/[id]`
+- `GET /api/v1/agents/[slug]/unread`
 
-## Bestanden
-- `info_messages_api.md`: documentatie van deze map
+Webhook endpoints:
 
-## Afhankelijkheden
-- Gebruikt door: dashboard messaging UI en agents
-- Hangt af van: auth, database en types
+- `GET /api/v1/agents/[slug]/webhooks`
+- `POST /api/v1/agents/[slug]/webhooks`
+- `DELETE /api/v1/agents/[slug]/webhooks/[id]`
 
-## Patronen
-- Messaging contract wordt versioned en expliciet gedocumenteerd
+Discovery extra:
 
-## Laatste wijziging
-- 2026-02-14: map placeholder toegevoegd.
+- `GET /api/v1/openapi.json`
+- `GET /api/v1/a2a/discover`

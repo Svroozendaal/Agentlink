@@ -20,8 +20,8 @@ export function AgentSearchBar({
   actionPath = "/agents",
   initialQuery,
   preservedParams = {},
-  buttonLabel = "Zoeken",
-  placeholder = "Zoek op agentnaam, beschrijving of use case...",
+  buttonLabel = "Search",
+  placeholder = "Search by agent name, description, or use case...",
 }: AgentSearchBarProps) {
   return (
     <form action={actionPath} method="get" className="rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm">

@@ -21,12 +21,99 @@ enum PricingModel {
   ENTERPRISE
 }
 
+enum ReviewStatus {
+  PUBLISHED
+  HIDDEN
+  FLAGGED
+}
+
+enum ActivityType {
+  AGENT_CREATED
+  AGENT_UPDATED
+  AGENT_PUBLISHED
+  AGENT_VERIFIED
+  AGENT_CONNECTED
+  AGENT_CLAIMED
+  REVIEW_POSTED
+  REVIEW_UPDATED
+  ENDORSEMENT_GIVEN
+  AGENT_REGISTERED_VIA_API
+  CONVERSATION_STARTED
+  MESSAGE_SENT
+}
+
+enum ConversationType {
+  DIRECT
+  REQUEST
+}
+
+enum ConversationStatus {
+  OPEN
+  CLOSED
+  ARCHIVED
+}
+
+enum MessageContentType {
+  TEXT
+  JSON
+  MARKDOWN
+}
+
+enum EndpointType {
+  REST
+  A2A
+  MCP
+  GRAPHQL
+  WEBSOCKET
+  CUSTOM
+}
+
+enum EndpointAuthType {
+  NONE
+  API_KEY
+  BEARER
+  BASIC
+  CUSTOM
+}
+
+enum EndpointHealth {
+  HEALTHY
+  DEGRADED
+  DOWN
+  UNKNOWN
+}
+
+enum ConnectStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  TIMEOUT
+}
+
+enum ImportStatus {
+  UNCLAIMED
+  CLAIM_PENDING
+  CLAIMED
+  REJECTED
+  MERGED
+}
+
+enum OutreachStatus {
+  QUEUED
+  SENT
+  RESPONDED
+  REGISTERED
+  DECLINED
+}
+
 model User {
   id            String         @id @default(cuid())
   email         String         @unique
   name          String?
   image         String?
   role          Role           @default(USER)
+  referralCode  String?        @unique @map("referral_code")
+  referredByCode String?       @map("referred_by_code")
   emailVerified DateTime?      @map("email_verified")
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
@@ -35,6 +122,12 @@ model User {
   agentProfiles AgentProfile[] @relation("AgentOwner")
   apiKeys       ApiKey[]
   reviews       Review[]       @relation("Reviewer")
+  reviewVotes   ReviewVote[]
+  endorsements  Endorsement[]  @relation("UserEndorser")
+  activityEvents ActivityEvent[] @relation("ActivityActorUser")
+  playgroundSessions PlaygroundSession[]
+  claimedImportedAgents ImportedAgent[] @relation("ImportedAgentClaimedBy")
+  createdInviteTokens InviteToken[] @relation("InviteCreatedBy")
 
   @@map("users")
 }
@@ -111,6 +204,13 @@ model AgentProfile {
   pricingDetails   String?      @map("pricing_details")
   isPublished      Boolean      @default(false) @map("is_published")
   isVerified       Boolean      @default(false) @map("is_verified")
+  averageRating    Float        @default(0) @map("average_rating")
+  reviewCount      Int          @default(0) @map("review_count")
+  endorsementCount Int          @default(0) @map("endorsement_count")
+  acceptsMessages  Boolean      @default(true) @map("accepts_messages")
+  playgroundEnabled Boolean     @default(false) @map("playground_enabled")
+  connectEnabled   Boolean      @default(false) @map("connect_enabled")
+  isEarlyAdopter   Boolean      @default(false) @map("is_early_adopter")
   logoUrl          String?      @map("logo_url")
   bannerUrl        String?      @map("banner_url")
   metadata         Json?
@@ -118,6 +218,20 @@ model AgentProfile {
   updatedAt        DateTime     @updatedAt @map("updated_at")
   owner            User         @relation("AgentOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   reviews          Review[]
+  reviewAuthors    Review[]     @relation("AgentReviews")
+  endorsements     Endorsement[] @relation("AgentEndorsementsReceived")
+  givenEndorsements Endorsement[] @relation("AgentEndorsementsGiven")
+  targetActivityEvents ActivityEvent[] @relation("ActivityTargetAgent")
+  actorActivityEvents ActivityEvent[] @relation("ActivityActorAgent")
+  initiatedConversations Conversation[] @relation("InitiatedConversations")
+  receivedConversations Conversation[] @relation("ReceivedConversations")
+  sentMessages     Message[] @relation("SentMessages")
+  webhooks         Webhook[]
+  endpoints        AgentEndpoint[]
+  playgroundSessions PlaygroundSession[]
+  connectsFrom     ConnectRequest[] @relation("ConnectFrom")
+  connectsTo       ConnectRequest[] @relation("ConnectTo")
+  importedListing  ImportedAgent? @relation("ImportedAgentProfile")
 
   @@index([ownerId])
   @@index([skills], type: Gin)
@@ -129,17 +243,283 @@ model Review {
   id         String       @id @default(cuid())
   reviewerId String       @map("reviewer_id")
   agentId    String       @map("agent_id")
+  authorAgentId String?   @map("author_agent_id")
   rating     Int
+  title      String?
   comment    String?
+  isVerifiedUse Boolean   @default(false) @map("is_verified_use")
+  status     ReviewStatus @default(PUBLISHED)
+  helpfulCount Int        @default(0) @map("helpful_count")
   createdAt  DateTime     @default(now()) @map("created_at")
   updatedAt  DateTime     @updatedAt @map("updated_at")
   reviewer   User         @relation("Reviewer", fields: [reviewerId], references: [id], onDelete: Cascade)
   agent      AgentProfile @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  authorAgent AgentProfile? @relation("AgentReviews", fields: [authorAgentId], references: [id], onDelete: SetNull)
+  votes      ReviewVote[]
 
   @@unique([reviewerId, agentId])
+  @@unique([agentId, authorAgentId])
   @@index([agentId])
+  @@index([agentId, status])
   @@index([reviewerId])
   @@map("reviews")
+}
+
+model ReviewVote {
+  id         String   @id @default(cuid())
+  reviewId   String   @map("review_id")
+  userId     String   @map("user_id")
+  isHelpful  Boolean  @map("is_helpful")
+  createdAt  DateTime @default(now()) @map("created_at")
+  review     Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([reviewId, userId])
+  @@index([reviewId])
+  @@map("review_votes")
+}
+
+model Endorsement {
+  id              String        @id @default(cuid())
+  agentId         String        @map("agent_id")
+  skill           String
+  endorserId      String        @map("endorser_id")
+  endorserAgentId String?       @map("endorser_agent_id")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  agent           AgentProfile  @relation("AgentEndorsementsReceived", fields: [agentId], references: [id], onDelete: Cascade)
+  endorser        User          @relation("UserEndorser", fields: [endorserId], references: [id], onDelete: Cascade)
+  endorserAgent   AgentProfile? @relation("AgentEndorsementsGiven", fields: [endorserAgentId], references: [id], onDelete: SetNull)
+
+  @@unique([agentId, skill, endorserId])
+  @@index([agentId])
+  @@index([agentId, skill])
+  @@map("endorsements")
+}
+
+model ActivityEvent {
+  id            String       @id @default(cuid())
+  type          ActivityType
+  actorId       String?      @map("actor_id")
+  actorAgentId  String?      @map("actor_agent_id")
+  targetAgentId String?      @map("target_agent_id")
+  metadata      Json?
+  isPublic      Boolean      @default(true) @map("is_public")
+  createdAt     DateTime     @default(now()) @map("created_at")
+  actor         User?        @relation("ActivityActorUser", fields: [actorId], references: [id], onDelete: SetNull)
+  actorAgent    AgentProfile? @relation("ActivityActorAgent", fields: [actorAgentId], references: [id], onDelete: SetNull)
+  targetAgent   AgentProfile? @relation("ActivityTargetAgent", fields: [targetAgentId], references: [id], onDelete: SetNull)
+
+  @@index([targetAgentId, createdAt])
+  @@index([actorId, createdAt])
+  @@index([isPublic, createdAt])
+  @@map("activity_events")
+}
+
+model Conversation {
+  id           String             @id @default(cuid())
+  type         ConversationType   @default(DIRECT)
+  status       ConversationStatus @default(OPEN)
+  subject      String?
+  initiatorId  String             @map("initiator_id")
+  receiverId   String             @map("receiver_id")
+  metadata     Json?
+  lastMessageAt DateTime?         @map("last_message_at")
+  createdAt    DateTime           @default(now()) @map("created_at")
+  updatedAt    DateTime           @updatedAt @map("updated_at")
+  initiator    AgentProfile       @relation("InitiatedConversations", fields: [initiatorId], references: [id], onDelete: Cascade)
+  receiver     AgentProfile       @relation("ReceivedConversations", fields: [receiverId], references: [id], onDelete: Cascade)
+  messages     Message[]
+
+  @@index([initiatorId, status])
+  @@index([receiverId, status])
+  @@index([lastMessageAt])
+  @@map("conversations")
+}
+
+model Message {
+  id             String             @id @default(cuid())
+  conversationId String             @map("conversation_id")
+  senderAgentId  String             @map("sender_agent_id")
+  content        String
+  contentType    MessageContentType @default(TEXT) @map("content_type")
+  metadata       Json?
+  isRead         Boolean            @default(false) @map("is_read")
+  createdAt      DateTime           @default(now()) @map("created_at")
+  conversation   Conversation       @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderAgent    AgentProfile       @relation("SentMessages", fields: [senderAgentId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@index([senderAgentId])
+  @@map("messages")
+}
+
+model Webhook {
+  id           String       @id @default(cuid())
+  agentId      String       @map("agent_id")
+  url          String
+  secret       String
+  events       String[]     @default([])
+  isActive     Boolean      @default(true) @map("is_active")
+  lastCalledAt DateTime?    @map("last_called_at")
+  failCount    Int          @default(0) @map("fail_count")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+  agent        AgentProfile @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@index([agentId])
+  @@unique([agentId, url])
+  @@map("webhooks")
+}
+
+model AgentEndpoint {
+  id              String           @id @default(cuid())
+  agentId         String           @map("agent_id")
+  type            EndpointType
+  url             String
+  method          String?          @default("POST")
+  authType        EndpointAuthType @default(NONE) @map("auth_type")
+  authConfig      Json?            @map("auth_config")
+  requestSchema   Json?            @map("request_schema")
+  responseSchema  Json?            @map("response_schema")
+  healthStatus    EndpointHealth   @default(UNKNOWN) @map("health_status")
+  lastHealthCheck DateTime?        @map("last_health_check")
+  description     String?
+  isDefault       Boolean          @default(false) @map("is_default")
+  logResponses    Boolean          @default(true) @map("log_responses")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+  agent           AgentProfile     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  playgroundSessions PlaygroundSession[]
+  connectRequests ConnectRequest[]
+
+  @@index([agentId])
+  @@unique([agentId, url])
+  @@map("agent_endpoints")
+}
+
+model PlaygroundSession {
+  id             String        @id @default(cuid())
+  agentId        String        @map("agent_id")
+  userId         String?       @map("user_id")
+  endpointId     String        @map("endpoint_id")
+  requestBody    Json          @map("request_body")
+  responseBody   Json?         @map("response_body")
+  responseStatus Int?          @map("response_status")
+  responseTimeMs Int?          @map("response_time_ms")
+  error          String?
+  createdAt      DateTime      @default(now()) @map("created_at")
+  agent          AgentProfile  @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  user           User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  endpoint       AgentEndpoint @relation(fields: [endpointId], references: [id], onDelete: Cascade)
+
+  @@index([agentId, createdAt])
+  @@index([userId])
+  @@map("playground_sessions")
+}
+
+model ConnectRequest {
+  id             String        @id @default(cuid())
+  fromAgentId    String        @map("from_agent_id")
+  toAgentId      String        @map("to_agent_id")
+  endpointId     String        @map("endpoint_id")
+  requestBody    Json          @map("request_body")
+  responseBody   Json?         @map("response_body")
+  responseStatus Int?          @map("response_status")
+  responseTimeMs Int?          @map("response_time_ms")
+  status         ConnectStatus @default(PENDING)
+  error          String?
+  createdAt      DateTime      @default(now()) @map("created_at")
+  fromAgent      AgentProfile  @relation("ConnectFrom", fields: [fromAgentId], references: [id], onDelete: Cascade)
+  toAgent        AgentProfile  @relation("ConnectTo", fields: [toAgentId], references: [id], onDelete: Cascade)
+  endpoint       AgentEndpoint @relation(fields: [endpointId], references: [id], onDelete: Cascade)
+
+  @@index([fromAgentId, createdAt])
+  @@index([toAgentId, createdAt])
+  @@map("connect_requests")
+}
+
+model ImportedAgent {
+  id              String       @id @default(cuid())
+  name            String
+  description     String?
+  sourceUrl       String       @unique @map("source_url")
+  sourcePlatform  String       @map("source_platform")
+  sourceData      Json?        @map("source_data")
+  skills          String[]     @default([])
+  category        String?
+  endpointUrl     String?      @map("endpoint_url")
+  websiteUrl      String?      @map("website_url")
+  status          ImportStatus @default(UNCLAIMED)
+  claimedByUserId String?      @map("claimed_by_user_id")
+  agentProfileId  String?      @unique @map("agent_profile_id")
+  importedAt      DateTime     @default(now()) @map("imported_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+  claimedByUser   User?        @relation("ImportedAgentClaimedBy", fields: [claimedByUserId], references: [id], onDelete: SetNull)
+  agentProfile    AgentProfile? @relation("ImportedAgentProfile", fields: [agentProfileId], references: [id], onDelete: SetNull)
+
+  @@index([sourcePlatform, status])
+  @@index([status])
+  @@index([name])
+  @@map("imported_agents")
+}
+
+model InviteToken {
+  id              String    @id @default(cuid())
+  token           String    @unique
+  campaign        String
+  agentName       String?   @map("agent_name")
+  agentData       Json?     @map("agent_data")
+  maxUses         Int       @default(1) @map("max_uses")
+  usedCount       Int       @default(0) @map("used_count")
+  expiresAt       DateTime? @map("expires_at")
+  createdByUserId String    @map("created_by_user_id")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  createdByUser   User      @relation("InviteCreatedBy", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  outreachRecords OutreachRecord[]
+
+  @@index([token])
+  @@index([campaign])
+  @@map("invite_tokens")
+}
+
+model OutreachRecord {
+  id              String         @id @default(cuid())
+  targetName      String         @map("target_name")
+  targetEmail     String?        @map("target_email")
+  targetUrl       String         @unique @map("target_url")
+  platform        String
+  campaign        String?
+  status          OutreachStatus @default(QUEUED)
+  messageTemplate String         @map("message_template")
+  sentAt          DateTime?      @map("sent_at")
+  respondedAt     DateTime?      @map("responded_at")
+  notes           String?
+  inviteTokenId   String?        @map("invite_token_id")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  inviteToken     InviteToken?   @relation(fields: [inviteTokenId], references: [id], onDelete: SetNull)
+
+  @@index([platform, status])
+  @@index([targetUrl])
+  @@map("outreach_records")
+}
+
+model GrowthMetric {
+  id               String   @id @default(cuid())
+  date             DateTime @db.Date
+  totalAgents      Int      @map("total_agents")
+  newAgents        Int      @map("new_agents")
+  totalUsers       Int      @map("total_users")
+  newUsers         Int      @map("new_users")
+  totalReviews     Int      @map("total_reviews")
+  importedAgents   Int      @map("imported_agents")
+  claimedAgents    Int      @map("claimed_agents")
+  invitesSent      Int      @map("invites_sent")
+  invitesUsed      Int      @map("invites_used")
+  apiRegistrations Int      @map("api_registrations")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  @@unique([date])
+  @@map("growth_metrics")
 }
 
 model VerificationToken {

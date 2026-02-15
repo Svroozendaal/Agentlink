@@ -19,6 +19,9 @@ const CreateAgentFormSchema = CreateAgentSchema.pick({
   endpointUrl: true,
   pricingModel: true,
   websiteUrl: true,
+  acceptsMessages: true,
+  playgroundEnabled: true,
+  connectEnabled: true,
 }).extend({
   isPublished: z.boolean().default(true),
 });
@@ -53,6 +56,9 @@ export function NewAgentForm() {
       endpointUrl: "",
       pricingModel: PricingModel.FREE,
       websiteUrl: "",
+      acceptsMessages: true,
+      playgroundEnabled: false,
+      connectEnabled: false,
       isPublished: true,
     },
   });
@@ -114,14 +120,14 @@ export function NewAgentForm() {
     const payload = await response.json();
 
     if (!response.ok) {
-      setFormError(payload?.error?.message ?? "Er ging iets mis bij het aanmaken.");
+      setFormError(payload?.error?.message ?? "Something went wrong while creating the agent.");
       return;
     }
 
     const createdSlug: string | undefined = payload?.data?.slug;
 
     if (!createdSlug) {
-      setFormError("Agent aangemaakt, maar slug ontbreekt in response.");
+      setFormError("Agent created, but slug was missing from the response.");
       return;
     }
 
@@ -132,7 +138,7 @@ export function NewAgentForm() {
     <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
       <div>
         <label htmlFor="name" className="text-sm font-medium text-zinc-800">
-          Naam
+          Name
         </label>
         <input
           id="name"
@@ -145,7 +151,7 @@ export function NewAgentForm() {
 
       <div>
         <label htmlFor="description" className="text-sm font-medium text-zinc-800">
-          Korte beschrijving
+          Short description
         </label>
         <input
           id="description"
@@ -160,7 +166,7 @@ export function NewAgentForm() {
 
       <div>
         <label htmlFor="longDescription" className="text-sm font-medium text-zinc-800">
-          Uitgebreide beschrijving
+          Long description
         </label>
         <textarea
           id="longDescription"
@@ -184,14 +190,14 @@ export function NewAgentForm() {
             value={skillInput}
             onChange={(event) => setSkillInput(event.target.value)}
             className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm"
-            placeholder="Bijv. data-analysis"
+            placeholder="e.g. data-analysis"
           />
           <button
             type="button"
             onClick={addSkill}
             className="rounded-lg border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100"
           >
-            Voeg toe
+            Add
           </button>
         </div>
         <div className="mt-2 flex flex-wrap gap-2">
@@ -281,8 +287,23 @@ export function NewAgentForm() {
       </div>
 
       <label className="inline-flex items-center gap-2 text-sm text-zinc-700">
+        <input type="checkbox" {...register("acceptsMessages")} />
+        This agent accepts messages
+      </label>
+
+      <label className="inline-flex items-center gap-2 text-sm text-zinc-700">
+        <input type="checkbox" {...register("playgroundEnabled")} />
+        Enable playground for public testing
+      </label>
+
+      <label className="inline-flex items-center gap-2 text-sm text-zinc-700">
+        <input type="checkbox" {...register("connectEnabled")} />
+        Enable connect API for agent-to-agent calls
+      </label>
+
+      <label className="inline-flex items-center gap-2 text-sm text-zinc-700">
         <input type="checkbox" {...register("isPublished")} />
-        Publiceer direct na aanmaken
+        Publish immediately after creation
       </label>
 
       {formError ? <p className="text-sm text-red-600">{formError}</p> : null}
@@ -292,7 +313,7 @@ export function NewAgentForm() {
         disabled={isSubmitting}
         className="w-full rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-70"
       >
-        {isSubmitting ? "Opslaan..." : "Agent aanmaken"}
+        {isSubmitting ? "Saving..." : "Create agent"}
       </button>
     </form>
   );
