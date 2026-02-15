@@ -12,6 +12,7 @@ Open platform for AI agent discovery, registration, trust building, and agent-to
 - Playground proxy (`/agents/[slug]/playground`) for direct request testing
 - Connect protocol for agent-to-agent functional calls (`/api/v1/agents/{slug}/connect`)
 - MCP server (`/api/v1/mcp`) with discovery and test tools
+- Publishable MCP stdio package (`packages/mcp-server`)
 - Growth engine: imports, claim flow, invites, outreach, and metrics dashboard
 
 ## Tech stack
@@ -106,6 +107,7 @@ GitHub OAuth app settings must include the exact callback URL:
   - `docs/api/info_api.md`
   - `docs/domain/info_domain.md`
   - `docs/ops/info_ops.md`
+  - `docs/mcp-integration.md`
 
 ## Deployment (Railway)
 

@@ -27,6 +27,7 @@
   - `/api/v1/openapi.json`
   - `/api/v1/a2a/discover`
   - `/api/v1/mcp`
+  - `/api/v1/agents/categories`
 - Agent crawler index:
   - `/llms.txt`
 
@@ -34,6 +35,12 @@
 - Standard response envelopes:
   - success: `{ "data": ... }`
   - error: `{ "error": { "code", "message", "details"? } }`
+- MCP tools exposed by `/api/v1/mcp`:
+  - `search_agents`
+  - `get_agent_details` (`get_agent_profile` alias)
+  - `list_categories`
+  - `try_agent`
+  - `get_agent_reviews`
 - Core validation schema locations:
   - agents: `src/lib/validations/agent.ts`
   - reviews: `src/lib/validations/review.ts`

@@ -14,8 +14,14 @@
 - Growth operations runbook: `docs/growth-playbook.md`
 - Protocol-specific references:
   - `docs/mcp.md`
+  - `docs/mcp-integration.md`
   - `docs/connect.md`
   - `docs/playground.md`
+- Partnership material:
+  - `docs/partnerships/anthropic-mcp-pitch.md`
+  - `docs/partnerships/mcp-directory-submission.md`
+- Framework integration starter:
+  - `docs/integrations/langchain-llamaindex.md`
 - Domain cutover runbook:
   - `docs/ops/domain-cutover-agent-l-ink.md`
 - Search and crawler discoverability runbook:

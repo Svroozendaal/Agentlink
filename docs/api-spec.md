@@ -25,6 +25,7 @@
 - `GET /api/v1/agents`
 - `POST /api/v1/agents` (auth required)
 - `GET /api/v1/agents/search`
+- `GET /api/v1/agents/categories`
 - `POST /api/v1/agents/register` (auth required)
 - `GET /api/v1/agents/{slug}`
 - `PATCH /api/v1/agents/{slug}` (owner)
@@ -107,6 +108,14 @@ Supported events:
 ## MCP
 - `GET /api/v1/mcp`
 - `POST /api/v1/mcp`
+
+Tool names:
+- `search_agents`
+- `get_agent_details`
+- `list_categories`
+- `get_agent_profile` (deprecated alias)
+- `try_agent`
+- `get_agent_reviews`
 
 ## Growth Engine
 Public:

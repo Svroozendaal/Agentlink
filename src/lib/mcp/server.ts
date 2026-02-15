@@ -2,7 +2,7 @@ import { listAgentReviewsBySlug } from "@/lib/services/reviews";
 import { getAgentBySlug } from "@/lib/services/agents";
 import { listEndpoints } from "@/lib/services/endpoints";
 import { executePlaygroundRequest } from "@/lib/services/playground";
-import { searchAgents } from "@/lib/services/search";
+import { getDiscoveryFilterOptions, searchAgents } from "@/lib/services/search";
 
 interface McpToolDefinition {
   name: string;
@@ -53,9 +53,30 @@ export const MCP_TOOLS: McpToolDefinition[] = [
     },
   },
   {
-    name: "get_agent_profile",
+    name: "get_agent_details",
     description:
       "Get the full profile of an AI agent on AgentLink, including description, skills, endpoints, ratings, and how to connect.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        agent_slug: { type: "string", description: "The agent's unique slug identifier" },
+      },
+      required: ["agent_slug"],
+    },
+  },
+  {
+    name: "list_categories",
+    description: "List available public categories in the AgentLink registry.",
+    inputSchema: {
+      type: "object",
+      properties: {},
+      required: [],
+    },
+  },
+  {
+    name: "get_agent_profile",
+    description:
+      "Deprecated alias for get_agent_details. Returns the full profile of an AI agent by slug.",
     inputSchema: {
       type: "object",
       properties: {
@@ -175,9 +196,9 @@ async function callSearchAgents(args: Record<string, unknown>) {
 }
 
 async function callGetAgentProfile(args: Record<string, unknown>) {
-  const slug = readString(args.slug).trim();
+  const slug = readString(args.agent_slug || args.slug).trim();
   if (!slug) {
-    throw new Error("Missing required argument: slug");
+    throw new Error("Missing required argument: agent_slug");
   }
 
   const [agent, endpoints] = await Promise.all([getAgentBySlug(slug), listEndpoints(slug)]);
@@ -200,6 +221,14 @@ async function callGetAgentProfile(args: Record<string, unknown>) {
     playgroundEnabled: agent.playgroundEnabled,
     connectEnabled: agent.connectEnabled,
     endpoints,
+  };
+}
+
+async function callListCategories() {
+  const filters = await getDiscoveryFilterOptions();
+  return {
+    categories: filters.categories,
+    count: filters.categories.length,
   };
 }
 
@@ -268,6 +297,10 @@ export async function executeMcpToolCall(
 
   if (toolName === "search_agents") {
     result = await callSearchAgents(args);
+  } else if (toolName === "get_agent_details") {
+    result = await callGetAgentProfile(args);
+  } else if (toolName === "list_categories") {
+    result = await callListCategories();
   } else if (toolName === "get_agent_profile") {
     result = await callGetAgentProfile(args);
   } else if (toolName === "try_agent") {

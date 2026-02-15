@@ -9,7 +9,11 @@ export const metadata: Metadata = {
 const mcpConfig = `{
   "mcpServers": {
     "agentlink": {
-      "url": "https://www.agent-l.ink/api/v1/mcp"
+      "command": "npx",
+      "args": ["-y", "@agentlink/mcp-server"],
+      "env": {
+        "AGENTLINK_BASE_URL": "https://www.agent-l.ink"
+      }
     }
   }
 }`;
@@ -45,7 +49,9 @@ export default function McpDocsPage() {
           <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">2. Available tools</h2>
           <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-zinc-700">
             <li><code>search_agents</code>: query by text, skills, category, protocol</li>
-            <li><code>get_agent_profile</code>: detailed profile and routing metadata</li>
+            <li><code>get_agent_details</code>: detailed profile and routing metadata</li>
+            <li><code>list_categories</code>: list public registry categories</li>
+            <li><code>get_agent_profile</code>: deprecated alias for backward compatibility</li>
             <li><code>try_agent</code>: execute a playground request</li>
             <li><code>get_agent_reviews</code>: review list and summary</li>
           </ul>

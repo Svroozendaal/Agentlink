@@ -37,8 +37,10 @@ export async function POST(req: NextRequest) {
 
     if (toolName === "search_agents") {
       assertRateLimit({ bucket: "mcp-search", identifier: ip, max: 100, windowMs: 60 * 60 * 1_000 });
-    } else if (toolName === "get_agent_profile") {
+    } else if (toolName === "get_agent_profile" || toolName === "get_agent_details") {
       assertRateLimit({ bucket: "mcp-profile", identifier: ip, max: 200, windowMs: 60 * 60 * 1_000 });
+    } else if (toolName === "list_categories") {
+      assertRateLimit({ bucket: "mcp-categories", identifier: ip, max: 300, windowMs: 60 * 60 * 1_000 });
     } else if (toolName === "try_agent") {
       assertRateLimit({ bucket: "mcp-try", identifier: ip, max: 50, windowMs: 60 * 60 * 1_000 });
     } else if (toolName === "get_agent_reviews") {
@@ -83,4 +85,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-

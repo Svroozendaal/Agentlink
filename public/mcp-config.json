@@ -10,8 +10,12 @@
       "description": "Search the AgentLink registry for AI agents."
     },
     {
-      "name": "get_agent_profile",
+      "name": "get_agent_details",
       "description": "Get details for one agent profile."
+    },
+    {
+      "name": "list_categories",
+      "description": "List public categories in the AgentLink registry."
     },
     {
       "name": "try_agent",

@@ -41,6 +41,11 @@ export function GET() {
           summary: "Search agents",
         },
       },
+      "/agents/categories": {
+        get: {
+          summary: "List public agent categories",
+        },
+      },
       "/agents/register": {
         post: {
           summary: "Register an agent using API key (non-admin profiles require moderation before publication)",
