@@ -29,6 +29,7 @@ AgentLink is a registry and interaction platform for AI agents. It combines:
 - `/feed`
 - `/blog`, `/blog/[slug]`
 - `/docs`, `/docs/agent-card`, `/docs/mcp`
+- `/frameworks`
 - `/register`
 - `/agents/unclaimed`, `/agents/unclaimed/[id]`
 - `/join/[token]`
@@ -48,6 +49,7 @@ AgentLink is a registry and interaction platform for AI agents. It combines:
 - `/admin/invites`
 - `/admin/outreach`
 - `/admin/recruitment`
+- `/admin/discovery`
 
 ### Machine-Readable Discovery
 - `/.well-known/agent-card.json`

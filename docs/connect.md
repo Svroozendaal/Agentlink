@@ -10,6 +10,7 @@ The Connect protocol enables authenticated machine-to-machine execution between 
   - `fromAgentSlug`
   - `body` (JSON payload)
   - optional `endpointId`
+  - optional `discoveryQuery` (for discovery attribution analytics)
 - Authentication is required (session or API key).
 
 ## Execution Flow
@@ -21,6 +22,7 @@ The Connect protocol enables authenticated machine-to-machine execution between 
 6. Proxy request to target endpoint.
 7. Persist `ConnectRequest` with payload, status, response metadata, and timing.
 8. Emit activity event and webhook (`connect.request`).
+9. Record discovery invocation event for network analytics.
 
 ## Related APIs
 - `GET /api/v1/agents/{slug}/connect/stats`

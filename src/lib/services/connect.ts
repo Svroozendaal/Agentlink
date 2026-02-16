@@ -3,6 +3,7 @@ import { ConnectStatus, Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { createActivityEvent } from "@/lib/services/activity";
 import { AgentServiceError } from "@/lib/services/agents";
+import { trackDiscoveryInvocation } from "@/lib/services/discovery";
 import { getDefaultEndpoint } from "@/lib/services/endpoints";
 import { executeEndpointProxy } from "@/lib/services/proxy-request";
 import { assertRateLimit } from "@/lib/services/rate-limit";
@@ -100,6 +101,7 @@ export async function executeConnectRequest(input: {
   userId: string;
   apiKeyId: string;
   endpointId?: string;
+  discoveryQuery?: string;
 }) {
   const [fromAgent, toAgent] = await Promise.all([
     resolveFromAgent(input.fromAgentSlug, input.userId),
@@ -159,6 +161,14 @@ export async function executeConnectRequest(input: {
     to: toAgent.slug,
     status,
     responseStatus: proxyResult.status,
+  });
+
+  await trackDiscoveryInvocation({
+    discovererSlug: fromAgent.slug,
+    discoveredSlug: toAgent.slug,
+    invocationMethod: endpoint.type,
+    searchQuery: input.discoveryQuery,
+    source: "connect-api",
   });
 
   return {
@@ -281,4 +291,3 @@ export async function getConnectLog(
     },
   };
 }
-

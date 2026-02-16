@@ -63,6 +63,12 @@ export function GET() {
           security: [{ ApiKeyAuth: [] }],
         },
       },
+      "/agents/{slug}/discovery": {
+        get: { summary: "Get agent discovery analytics snapshot" },
+      },
+      "/agents/{slug}/badge": {
+        get: { summary: "Get powered-by badge SVG for this agent" },
+      },
       "/agents/{slug}/card": {
         get: { summary: "Get machine-readable agent card" },
       },
@@ -306,6 +312,12 @@ export function GET() {
           security: [{ ApiKeyAuth: [] }],
         },
       },
+      "/admin/outreach/execute": {
+        post: {
+          summary: "Execute queued outreach delivery",
+          security: [{ ApiKeyAuth: [] }],
+        },
+      },
       "/admin/outreach/{id}": {
         patch: {
           summary: "Update outreach status",
@@ -321,6 +333,12 @@ export function GET() {
       "/admin/metrics/dashboard": {
         get: {
           summary: "Read growth dashboard",
+          security: [{ ApiKeyAuth: [] }],
+        },
+      },
+      "/admin/discovery/summary": {
+        get: {
+          summary: "Read discovery network dashboard",
           security: [{ ApiKeyAuth: [] }],
         },
       },

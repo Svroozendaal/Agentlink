@@ -4,7 +4,7 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { db } from "@/lib/db";
 import { AgentServiceError } from "@/lib/services/agents";
-import { generateBulkOutreach } from "@/lib/services/outreach";
+import { executeQueuedOutreach, generateBulkOutreach } from "@/lib/services/outreach";
 import { GenerateBulkOutreachSchema } from "@/lib/validations/outreach";
 
 export async function POST(req: NextRequest) {
@@ -29,7 +29,24 @@ export async function POST(req: NextRequest) {
       adminUserId: authContext.user.id,
     });
 
-    return NextResponse.json({ data: result });
+    const autoSend = input.autoSend ?? true;
+    const execution =
+      autoSend && result.generated > 0
+        ? await executeQueuedOutreach({
+            campaign: input.campaign,
+            platform: input.source,
+            limit: Math.min(input.sendLimit ?? result.generated, result.generated),
+            dryRun: false,
+          })
+        : null;
+
+    return NextResponse.json({
+      data: {
+        ...result,
+        autoSend,
+        execution,
+      },
+    });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -55,4 +72,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-

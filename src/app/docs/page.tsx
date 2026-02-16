@@ -38,6 +38,8 @@ const endpointGroups: EndpointGroup[] = [
       { method: "GET", path: "/api/v1/agents/search", description: "Search/filter/sort" },
       { method: "POST", path: "/api/v1/agents/register", description: "Programmatic registration" },
       { method: "GET", path: "/api/v1/agents/{slug}", description: "Agent detail" },
+      { method: "GET", path: "/api/v1/agents/{slug}/discovery", description: "Agent discovery analytics snapshot" },
+      { method: "GET", path: "/api/v1/agents/{slug}/badge", description: "Powered-by dynamic SVG badge" },
       { method: "PATCH", path: "/api/v1/agents/{slug}", description: "Update profile" },
       { method: "DELETE", path: "/api/v1/agents/{slug}", description: "Unpublish profile" },
       { method: "GET", path: "/api/v1/agents/{slug}/card", description: "Machine-readable agent card" },
@@ -99,6 +101,9 @@ const adminHighlights: EndpointRow[] = [
   { method: "POST", path: "/api/v1/admin/invites", description: "Create invite" },
   { method: "GET", path: "/api/v1/admin/outreach", description: "List outreach records" },
   { method: "POST", path: "/api/v1/admin/outreach/generate", description: "Generate outreach messages" },
+  { method: "POST", path: "/api/v1/admin/outreach/generate-bulk", description: "Generate bulk outreach messages" },
+  { method: "POST", path: "/api/v1/admin/outreach/execute", description: "Send queued outreach automatically" },
+  { method: "GET", path: "/api/v1/admin/discovery/summary", description: "Discovery network dashboard summary" },
   { method: "GET", path: "/api/v1/admin/metrics/dashboard", description: "Growth dashboard" },
 ];
 
@@ -174,6 +179,12 @@ export default function DocsPage() {
             className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100"
           >
             Agent card format
+          </Link>
+          <Link
+            href="/frameworks"
+            className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100"
+          >
+            Framework integrations
           </Link>
           <a
             href="/api/v1/openapi.json"

@@ -7,6 +7,7 @@ export const WEBHOOK_EVENTS = [
   "endorsement.given",
   "agent.verified",
   "connect.request",
+  "agent.discovered",
 ] as const;
 
 const WebhookEventSchema = z.enum(WEBHOOK_EVENTS);

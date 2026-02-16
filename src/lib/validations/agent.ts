@@ -171,6 +171,13 @@ export const SearchAgentsQuerySchema = z.object({
     .string()
     .optional()
     .transform((value) => parseCommaSeparated(value)),
+  discovererSlug: z
+    .string()
+    .trim()
+    .min(2)
+    .max(120)
+    .regex(/^[a-z0-9-]+$/)
+    .optional(),
   sort: z.enum(["relevance", "rating", "reviews", "endorsements", "newest", "name"]).default("relevance"),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(50).default(12),

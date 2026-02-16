@@ -44,6 +44,7 @@ export async function POST(
       userId: authContext.user.id,
       apiKeyId: authContext.apiKeyId ?? authContext.user.id,
       endpointId: validatedBody.endpointId,
+      discoveryQuery: validatedBody.discoveryQuery,
     });
 
     const responseStatus =
@@ -87,4 +88,3 @@ export async function POST(
     );
   }
 }
-

@@ -1,22 +1,24 @@
-# src/app/api/v1/agents/search
+# `src/app/api/v1/agents/search`
 
-Doel: machine-readable discovery endpoint voor agent zoeken/filteren/sorteren.
+Purpose: machine-readable discovery endpoint for searching/filtering/sorting agents.
 
-## Overzicht
-Deze route exposeert zoekfunctionaliteit voor zowel de webdirectory als externe agents.
-Het endpoint ondersteunt full-text search, filters, sortering en paginatie.
+## Overview
+This route powers both the public directory and external orchestration clients.
+The endpoint supports full-text search, advanced filters, sorting, and pagination.
 
-## Bestanden
-- `route.ts`: `GET` search endpoint voor discovery
-- `info_search_api.md`: documentatie van deze map
+## Files
+- `route.ts`: `GET` discovery search endpoint
+- `info_search_api.md`: folder-level documentation
 
-## Afhankelijkheden
-- Gebruikt door: `src/app/agents/page.tsx`, externe integraties
-- Hangt af van: `src/lib/services/search.ts`, `src/lib/validations/agent.ts`
+## Dependencies
+- Used by: `src/app/agents/page.tsx`, MCP tools, external agents/frameworks
+- Depends on: `src/lib/services/search.ts`, `src/lib/validations/agent.ts`, `src/lib/services/discovery.ts`
 
-## Patronen
-- Query-validatie met `SearchAgentsQuerySchema`
-- Gestandaardiseerde API-response met `{ data, meta }`
+## Patterns
+- Query validation via `SearchAgentsQuerySchema`
+- Standard response envelope `{ data, meta }`
+- Optional `discovererSlug` query for agent-to-agent discovery tracking
+- Response `meta` includes powered-by attribution fields
 
-## Laatste wijziging
-- 2026-02-14: search endpoint toegevoegd in fase 3.
+## Last update
+- 2026-02-15: added discovery event tracking + powered-by metadata.

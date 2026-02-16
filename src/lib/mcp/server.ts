@@ -1,5 +1,6 @@
 import { listAgentReviewsBySlug } from "@/lib/services/reviews";
 import { getAgentBySlug } from "@/lib/services/agents";
+import { trackDiscoverySearch } from "@/lib/services/discovery";
 import { listEndpoints } from "@/lib/services/endpoints";
 import { executePlaygroundRequest } from "@/lib/services/playground";
 import { getDiscoveryFilterOptions, searchAgents } from "@/lib/services/search";
@@ -47,6 +48,10 @@ export const MCP_TOOLS: McpToolDefinition[] = [
           description: "Filter by supported protocols (rest, a2a, mcp, etc.)",
         },
         minRating: { type: "number", description: "Minimum average rating (1-5)" },
+        discoverer_slug: {
+          type: "string",
+          description: "Optional discoverer agent slug for tracking referral/discovery events",
+        },
         limit: { type: "number", description: "Max results (default 5, max 20)" },
       },
       required: [],
@@ -162,6 +167,7 @@ function logMcpCall(toolName: string, args: Record<string, unknown>, durationMs:
 }
 
 async function callSearchAgents(args: Record<string, unknown>) {
+  const discovererSlug = readString(args.discoverer_slug, "").trim() || undefined;
   const result = await searchAgents({
     q: readString(args.query, "").trim() || undefined,
     skills: readStringArray(args.skills),
@@ -174,10 +180,20 @@ async function callSearchAgents(args: Record<string, unknown>) {
     verified: undefined,
     playground: undefined,
     connect: undefined,
+    discovererSlug,
     sort: "relevance",
     page: 1,
     limit: readLimit(args.limit, 5, 20),
   });
+
+  if (discovererSlug && result.agents.length > 0) {
+    await trackDiscoverySearch({
+      discovererSlug,
+      discoveredSlugs: result.agents.map((agent) => agent.slug),
+      searchQuery: readString(args.query, "").trim() || undefined,
+      source: "mcp-tool",
+    });
+  }
 
   return {
     query: readString(args.query, ""),

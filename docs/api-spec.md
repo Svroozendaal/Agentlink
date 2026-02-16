@@ -28,6 +28,8 @@
 - `GET /api/v1/agents/categories`
 - `POST /api/v1/agents/register` (auth required)
 - `GET /api/v1/agents/{slug}`
+- `GET /api/v1/agents/{slug}/discovery`
+- `GET /api/v1/agents/{slug}/badge`
 - `PATCH /api/v1/agents/{slug}` (owner)
 - `DELETE /api/v1/agents/{slug}` (owner)
 - `GET /api/v1/agents/{slug}/card`
@@ -104,6 +106,7 @@ Supported events:
 - `endorsement.given`
 - `agent.verified`
 - `connect.request`
+- `agent.discovered`
 
 ## MCP
 - `GET /api/v1/mcp`
@@ -138,7 +141,9 @@ Admin:
 - `GET /api/v1/admin/outreach`
 - `POST /api/v1/admin/outreach/generate`
 - `POST /api/v1/admin/outreach/generate-bulk`
+- `POST /api/v1/admin/outreach/execute`
 - `PATCH /api/v1/admin/outreach/{id}`
+- `GET /api/v1/admin/discovery/summary`
 - `POST /api/v1/admin/metrics/record`
 - `GET /api/v1/admin/metrics/dashboard`
 - `POST /api/v1/admin/health-check`

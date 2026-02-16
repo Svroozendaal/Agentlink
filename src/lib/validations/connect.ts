@@ -9,6 +9,7 @@ export const ConnectRequestSchema = z.object({
     .regex(/^[a-z0-9-]+$/),
   body: z.record(z.string(), z.unknown()),
   endpointId: z.string().trim().min(2).max(120).optional(),
+  discoveryQuery: z.string().trim().min(1).max(300).optional(),
 });
 
 export const ConnectLogQuerySchema = z.object({
@@ -19,4 +20,3 @@ export const ConnectLogQuerySchema = z.object({
 
 export type ConnectRequestInput = z.infer<typeof ConnectRequestSchema>;
 export type ConnectLogQueryInput = z.infer<typeof ConnectLogQuerySchema>;
-

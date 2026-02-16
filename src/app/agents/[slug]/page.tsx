@@ -16,6 +16,7 @@ import { getAgentBySlug, listOwnedAgents } from "@/lib/services/agents";
 import { listEndpoints } from "@/lib/services/endpoints";
 import { listEndorsementsBySlug } from "@/lib/services/endorsements";
 import { listAgentReviewsBySlug } from "@/lib/services/reviews";
+import { getAgentDiscoveryInsights } from "@/lib/services/discovery";
 
 interface AgentProfilePageProps {
   params: Promise<{ slug: string }>;
@@ -70,7 +71,7 @@ async function AgentProfileContent({
     notFound();
   }
 
-  const [reviewResult, endorsementResult, activityEvents, ownedAgents, endpoints, playgroundCount, connectCount] =
+  const [reviewResult, endorsementResult, activityEvents, ownedAgents, endpoints, playgroundCount, connectCount, discoveryInsights] =
     await Promise.all([
       listAgentReviewsBySlug(slug, viewerUserId, {
         page: 1,
@@ -89,6 +90,7 @@ async function AgentProfileContent({
           toAgentId: agent.id,
         },
       }),
+      getAgentDiscoveryInsights(slug),
     ]);
 
   const averageRatingLabel =
@@ -482,6 +484,31 @@ curl -X ${endpointMethodLabel(defaultEndpoint.method, defaultEndpoint.type)} '${
         </section>
 
         <aside className="space-y-6">
+          <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">Discovery analytics</h2>
+            <dl className="mt-4 space-y-3 text-sm">
+              <div className="flex justify-between gap-4">
+                <dt className="text-zinc-500">Discovered (7d)</dt>
+                <dd className="text-right font-medium text-zinc-800">{discoveryInsights.discoveredThisWeek}</dd>
+              </div>
+              <div className="flex justify-between gap-4">
+                <dt className="text-zinc-500">Invoked (7d)</dt>
+                <dd className="text-right font-medium text-zinc-800">{discoveryInsights.invokedThisWeek}</dd>
+              </div>
+              <div className="flex justify-between gap-4">
+                <dt className="text-zinc-500">Top source</dt>
+                <dd className="text-right font-medium text-zinc-800">{discoveryInsights.topDiscoverySource}</dd>
+              </div>
+              <div className="flex justify-between gap-4">
+                <dt className="text-zinc-500">Referral tier</dt>
+                <dd className="text-right font-medium text-zinc-800">{discoveryInsights.referral.tier}</dd>
+              </div>
+            </dl>
+            <p className="mt-4 text-xs text-zinc-500">
+              Badge URL: <code>/api/v1/agents/{agent.slug}/badge</code>
+            </p>
+          </section>
+
           <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">Quick info</h2>
             <dl className="mt-4 space-y-3 text-sm">

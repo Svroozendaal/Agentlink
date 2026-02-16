@@ -30,7 +30,13 @@ Outreach:
 - `GET /api/v1/admin/outreach`
 - `POST /api/v1/admin/outreach/generate`
 - `POST /api/v1/admin/outreach/generate-bulk`
+- `POST /api/v1/admin/outreach/execute`
 - `PATCH /api/v1/admin/outreach/{id}`
+
+Discovery network:
+- `GET /api/v1/agents/{slug}/discovery`
+- `GET /api/v1/agents/{slug}/badge`
+- `GET /api/v1/admin/discovery/summary`
 
 Metrics:
 - `POST /api/v1/admin/metrics/record`
@@ -63,3 +69,9 @@ Public compliance APIs:
 - Keep campaign naming deterministic (for example `source-YYYY-MM-goal`).
 - Respect opt-out and domain cooldown rules at all times.
 - Keep dry-run default in new environments until reviewed.
+
+## Outreach Delivery Config
+- `RESEND_API_KEY`: required for automatic email delivery.
+- `OUTREACH_FROM_EMAIL`: sender identity used for outreach emails.
+- `OUTREACH_MAX_EMAILS_PER_DAY`: daily cap for email sends (default `50`).
+- `OUTREACH_MAX_GITHUB_ISSUES_PER_DAY`: daily cap for GitHub issue outreach (default `20`).

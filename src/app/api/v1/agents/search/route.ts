@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { trackDiscoverySearch } from "@/lib/services/discovery";
 import { searchAgents } from "@/lib/services/search";
 import { SearchAgentsQuerySchema } from "@/lib/validations/agent";
 
@@ -17,6 +18,10 @@ function parseQueryParams(req: NextRequest): Record<string, string> {
     parsed[key] = csvKeys.has(key) ? values.join(",") : values[0];
   }
 
+  if (!parsed.discovererSlug && parsed.discoverer) {
+    parsed.discovererSlug = parsed.discoverer;
+  }
+
   return parsed;
 }
 
@@ -26,7 +31,24 @@ export async function GET(req: NextRequest) {
     const query = SearchAgentsQuerySchema.parse(queryParams);
     const result = await searchAgents(query);
 
-    return NextResponse.json({ data: result.agents, meta: result.meta });
+    if (query.discovererSlug && result.agents.length > 0) {
+      await trackDiscoverySearch({
+        discovererSlug: query.discovererSlug,
+        discoveredSlugs: result.agents.map((agent) => agent.slug),
+        searchQuery: query.q,
+        source: "api-search",
+      });
+    }
+
+    return NextResponse.json({
+      data: result.agents,
+      meta: {
+        ...result.meta,
+        powered_by: "AgentLink Discovery API",
+        add_your_agent: "https://www.agent-l.ink/register",
+        api_docs: "https://www.agent-l.ink/docs",
+      },
+    });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(

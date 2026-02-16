@@ -5,7 +5,7 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { db } from "@/lib/db";
 import { AgentServiceError } from "@/lib/services/agents";
-import { createOutreachRecord } from "@/lib/services/outreach";
+import { createOutreachRecord, executeQueuedOutreach } from "@/lib/services/outreach";
 import { GenerateOutreachSchema } from "@/lib/validations/outreach";
 
 export async function POST(req: NextRequest) {
@@ -41,7 +41,23 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    return NextResponse.json({ data: generated });
+    const autoSend = input.autoSend ?? true;
+    const execution =
+      autoSend && generated.length > 0
+        ? await executeQueuedOutreach({
+            campaign: input.campaign,
+            limit: Math.min(input.sendLimit ?? generated.length, generated.length),
+            dryRun: false,
+          })
+        : null;
+
+    return NextResponse.json({
+      data: generated,
+      meta: {
+        autoSend,
+        execution,
+      },
+    });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -67,4 +83,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-

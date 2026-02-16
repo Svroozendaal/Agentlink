@@ -5,7 +5,7 @@ import { ImportStatus, type Prisma } from "@prisma/client";
 import { db } from "../src/lib/db";
 import { OUTREACH_TEMPLATES, type OutreachTemplateKey } from "../src/lib/constants/outreach-templates";
 import { ensureRecruiterIdentity } from "../src/lib/recruitment/identity";
-import { createOutreachRecord, markOutreachSent } from "../src/lib/services/outreach";
+import { createOutreachRecord, executeQueuedOutreach } from "../src/lib/services/outreach";
 import {
   nowId,
   parseCliArgs,
@@ -20,13 +20,13 @@ import {
 const EMAIL_REGEX = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-z]{2,}/i;
 
 interface ProcessRow {
+  outreachId?: string;
   name: string;
   sourceUrl: string;
   platform: string;
   template: OutreachTemplateKey;
   status: "PREVIEW" | "QUEUED" | "SENT" | "SKIPPED" | "ERROR";
   reason: string;
-  outreachId?: string;
   inviteUrl?: string;
 }
 
@@ -118,7 +118,7 @@ async function main() {
   const campaign = readString(args, "campaign", "phase1-claiming") ?? "phase1-claiming";
   const explicitTemplate = readString(args, "template");
   const dryRun = readBoolean(args, "dryRun", true);
-  const markSent = readBoolean(args, "markSent", false);
+  const autoSend = readBoolean(args, "autoSend", true);
   const reportDir =
     readString(args, "reportDir") ??
     path.join(process.cwd(), "agentlink-output", "development", "reports", "outreach");
@@ -206,18 +206,14 @@ async function main() {
           agentName: candidate.name,
         });
 
-        if (markSent) {
-          await markOutreachSent(created.outreachId);
-        }
-
         rows.push({
+          outreachId: created.outreachId,
           name: candidate.name,
           sourceUrl: candidate.sourceUrl,
           platform: candidate.sourcePlatform,
           template: templateKey,
-          status: markSent ? "SENT" : "QUEUED",
-          reason: markSent ? "Outreach marked as sent" : "Outreach created",
-          outreachId: created.outreachId,
+          status: "QUEUED",
+          reason: "Outreach created",
           inviteUrl: created.message.inviteUrl,
         });
       } catch (error) {
@@ -231,6 +227,38 @@ async function main() {
         });
       }
     }
+
+    if (autoSend) {
+      const execution = await executeQueuedOutreach({
+        campaign,
+        platform,
+        limit: rows.filter((row) => row.status === "QUEUED").length,
+        dryRun: false,
+      });
+
+      const byOutreachId = new Map(execution.results.map((item) => [item.outreachId, item]));
+      for (const row of rows) {
+        if (!row.outreachId) {
+          continue;
+        }
+
+        const executionRow = byOutreachId.get(row.outreachId);
+        if (!executionRow) {
+          continue;
+        }
+
+        if (executionRow.status === "SENT") {
+          row.status = "SENT";
+          row.reason = executionRow.method ? `Sent via ${executionRow.method}` : "Sent";
+        } else if (executionRow.status === "SKIPPED" || executionRow.status === "OPTED_OUT") {
+          row.status = "SKIPPED";
+          row.reason = executionRow.reason ?? "Skipped";
+        } else {
+          row.status = "ERROR";
+          row.reason = executionRow.reason ?? "Failed to send";
+        }
+      }
+    }
   }
 
   const skippedCount = skippedExisting + skippedQuality + Math.max(0, eligibleCount - prepared.length);
@@ -238,7 +266,7 @@ async function main() {
     campaign,
     platform: platform ?? "all",
     dryRun,
-    markSent,
+    autoSend,
     selected: candidates.length,
     prepared: prepared.length,
     queued: rows.filter((row) => row.status === "QUEUED").length,

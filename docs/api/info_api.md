@@ -28,6 +28,8 @@
   - `/api/v1/a2a/discover`
   - `/api/v1/mcp`
   - `/api/v1/agents/categories`
+  - `/api/v1/agents/{slug}/discovery`
+  - `/api/v1/agents/{slug}/badge`
 - Agent crawler index:
   - `/llms.txt`
 
@@ -49,6 +51,7 @@
   - connect: `src/lib/validations/connect.ts`
   - import/invites/outreach: `src/lib/validations/import.ts`, `invite.ts`, `outreach.ts`
   - recruitment: `src/lib/validations/recruitment.ts`
+  - webhooks/events: `src/lib/validations/webhook.ts`
 
 ## Gotchas / edge cases
 - API key management routes require session auth, not API key auth.

@@ -263,6 +263,8 @@ model AgentProfile {
   playgroundSessions PlaygroundSession[]
   connectsFrom     ConnectRequest[] @relation("ConnectFrom")
   connectsTo       ConnectRequest[] @relation("ConnectTo")
+  discoveryEventsAsDiscoverer DiscoveryEvent[] @relation("DiscoveryEventsAsDiscoverer")
+  discoveryEventsAsDiscovered DiscoveryEvent[] @relation("DiscoveryEventsAsDiscovered")
   importedListing  ImportedAgent? @relation("ImportedAgentProfile")
 
   @@index([ownerId])
@@ -469,6 +471,25 @@ model ConnectRequest {
   @@index([fromAgentId, createdAt])
   @@index([toAgentId, createdAt])
   @@map("connect_requests")
+}
+
+model DiscoveryEvent {
+  id                  String      @id @default(cuid())
+  discovererAgentId   String?     @map("discoverer_agent_id")
+  discoveredAgentId   String      @map("discovered_agent_id")
+  searchQuery         String?     @map("search_query")
+  resultedInInvocation Boolean    @default(false) @map("resulted_in_invocation")
+  invocationMethod    String?     @map("invocation_method")
+  source              String      @default("api")
+  createdAt           DateTime    @default(now()) @map("created_at")
+  discovererAgent     AgentProfile? @relation("DiscoveryEventsAsDiscoverer", fields: [discovererAgentId], references: [id], onDelete: SetNull)
+  discoveredAgent     AgentProfile @relation("DiscoveryEventsAsDiscovered", fields: [discoveredAgentId], references: [id], onDelete: Cascade)
+
+  @@index([discovererAgentId, createdAt])
+  @@index([discoveredAgentId, createdAt])
+  @@index([resultedInInvocation, createdAt])
+  @@index([source, createdAt])
+  @@map("discovery_events")
 }
 
 model ImportedAgent {

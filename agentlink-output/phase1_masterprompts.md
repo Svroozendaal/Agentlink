@@ -407,8 +407,8 @@ TECHNICAL REQUIREMENTS:
 - Use GitHub API for issue creation
 - Implement job queue (Bull/BullMQ) for async sending
 - Add email open/click tracking (pixel + link wrapping)
-- Create admin dashboard to monitor outreach campaigns
 
+- Create admin dashboard to monitor outreach campaigns
 OUTPUT:
 - Script: scripts/outreach-claiming.ts
 - Email templates: emails/claiming-invite.html

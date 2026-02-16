@@ -20,14 +20,14 @@
   - `/categories`, `/categories/[category]`
   - `/skills/[skill]`
   - `/feed`, `/blog`, `/blog/[slug]`
-  - `/docs`, `/docs/mcp`, `/docs/agent-card`
+  - `/docs`, `/docs/mcp`, `/docs/agent-card`, `/frameworks`
   - `/register`, `/agents/unclaimed`, `/agents/unclaimed/[id]`, `/join/[token]`
   - `/opt-out`, `/recruitment-policy`, `/privacy`, `/terms`
 - Authenticated pages:
   - `/login`
   - `/dashboard`, `/dashboard/agents`, `/dashboard/agents/new`, `/dashboard/agents/[slug]/edit`, `/dashboard/messages`
 - Admin pages:
-  - `/admin`, `/admin/growth`, `/admin/imports`, `/admin/invites`, `/admin/outreach`, `/admin/recruitment`
+  - `/admin`, `/admin/growth`, `/admin/imports`, `/admin/invites`, `/admin/outreach`, `/admin/recruitment`, `/admin/discovery`
 
 ## Data contracts
 - Agent directory query params are validated by `SearchAgentsQuerySchema` (`src/lib/validations/agent.ts`).
