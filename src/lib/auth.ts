@@ -9,6 +9,8 @@ import { db } from "@/lib/db";
 const githubClientId = process.env.GITHUB_CLIENT_ID ?? process.env.GITHUB_ID ?? "";
 const githubClientSecret =
   process.env.GITHUB_CLIENT_SECRET ?? process.env.GITHUB_SECRET ?? "";
+const isProduction = process.env.NODE_ENV === "production";
+const cookiePrefix = isProduction ? "__Secure-agentlink.v2" : "agentlink.v2";
 
 if (
   process.env.GITHUB_CLIENT_ID &&
@@ -41,6 +43,62 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: "database",
     maxAge: 30 * 24 * 60 * 60,
+  },
+  useSecureCookies: isProduction,
+  cookies: {
+    sessionToken: {
+      name: `${cookiePrefix}.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: isProduction,
+      },
+    },
+    callbackUrl: {
+      name: `${cookiePrefix}.callback-url`,
+      options: {
+        sameSite: "lax",
+        path: "/",
+        secure: isProduction,
+      },
+    },
+    csrfToken: {
+      name: `${cookiePrefix}.csrf-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: isProduction,
+      },
+    },
+    pkceCodeVerifier: {
+      name: `${cookiePrefix}.pkce.code_verifier`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: isProduction,
+      },
+    },
+    state: {
+      name: `${cookiePrefix}.state`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: isProduction,
+      },
+    },
+    nonce: {
+      name: `${cookiePrefix}.nonce`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: isProduction,
+      },
+    },
   },
   callbacks: {
     async session({ session, user }) {

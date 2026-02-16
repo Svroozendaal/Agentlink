@@ -1,8 +1,24 @@
 "use client";
 
+import { useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 
 export default function LoginPage() {
+  const searchParams = useSearchParams();
+  const callbackUrl = useMemo(() => {
+    const raw = searchParams.get("callbackUrl");
+    if (!raw) {
+      return "/";
+    }
+
+    if (raw.startsWith("/")) {
+      return raw;
+    }
+
+    return "/";
+  }, [searchParams]);
+
   return (
     <main className="mx-auto flex min-h-screen max-w-md items-center justify-center px-6 py-16">
       <section className="w-full rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm">
@@ -13,7 +29,7 @@ export default function LoginPage() {
         <button
           type="button"
           className="mt-6 w-full rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-700"
-          onClick={() => signIn("github", { callbackUrl: "/" })}
+          onClick={() => signIn("github", { callbackUrl })}
         >
           Continue with GitHub
         </button>
