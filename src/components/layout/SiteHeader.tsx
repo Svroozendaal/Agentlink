@@ -51,7 +51,7 @@ export function SiteHeader() {
               </Link>
             ))}
             <Link
-              href="/login"
+              href="/login?callbackUrl=%2Fdashboard"
               className="rounded-md border border-zinc-300 px-3 py-1.5 text-zinc-700 hover:bg-zinc-100"
             >
               {COPY.nav.login}
@@ -71,7 +71,11 @@ export function SiteHeader() {
                 {link.label}
               </Link>
             ))}
-            <Link href="/login" className="rounded-md border border-zinc-300 px-3 py-2 hover:bg-zinc-100" onClick={closeMenu}>
+            <Link
+              href="/login?callbackUrl=%2Fdashboard"
+              className="rounded-md border border-zinc-300 px-3 py-2 hover:bg-zinc-100"
+              onClick={closeMenu}
+            >
               {COPY.nav.login}
             </Link>
           </nav>

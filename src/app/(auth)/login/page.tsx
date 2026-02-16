@@ -8,13 +8,13 @@ export default function LoginPage() {
     const params = new URLSearchParams(window.location.search);
     const raw = params.get("callbackUrl");
 
-    let callbackUrl = "/";
+    let callbackUrl = "/dashboard";
     if (!raw) {
       void signIn("github", { callbackUrl });
       return;
     }
 
-    if (raw.startsWith("/")) {
+    if (raw.startsWith("/") && raw !== "/") {
       callbackUrl = raw;
     }
 
